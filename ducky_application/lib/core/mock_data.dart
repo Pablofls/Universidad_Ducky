@@ -1,242 +1,76 @@
-// ═══════════════════════════════════════════════════════════════════════════
-//  lib/core/mock_data.dart
-//  Datos de prueba — se reemplazarán por llamadas a la BD.
-// ═══════════════════════════════════════════════════════════════════════════
-
 import 'models/models.dart';
 
 class MockData {
-  // ── Dashboard ───────────────────────────────────────────────────────────
-  static const DashboardStats dashboardStats = DashboardStats(
-    totalBooks: 248,
-    totalCopies: 612,
-    activeLoans: 43,
-    overdueBooks: 7,
+  static const dashboardStats = DashboardStats(
+    totalBooks: 18, totalCopies: 102, activeLoans: 15, overdueBooks: 3,
   );
 
-  static const List<Map<String, dynamic>> loanTrend = [
-    {'month': 'Oct', 'loans': 45},
-    {'month': 'Nov', 'loans': 52},
-    {'month': 'Dic', 'loans': 38},
-    {'month': 'Ene', 'loans': 61},
-    {'month': 'Feb', 'loans': 55},
-    {'month': 'Mar', 'loans': 48},
+  static const loanTrend = [
+    {'month': 'Oct', 'loans': 45}, {'month': 'Nov', 'loans': 52},
+    {'month': 'Dic', 'loans': 38}, {'month': 'Ene', 'loans': 61},
+    {'month': 'Feb', 'loans': 55}, {'month': 'Mar', 'loans': 48},
   ];
 
-  static const List<Map<String, dynamic>> categoryDistribution = [
-    {'name': 'Ciencias de la Computación', 'value': 35},
-    {'name': 'Ing. de Software',            'value': 25},
+  static const categoryDistribution = [
+    {'name': 'Ciencias de la Computacion', 'value': 35},
+    {'name': 'Ingenieria de Software',      'value': 25},
     {'name': 'Bases de Datos',              'value': 15},
-    {'name': 'Gestión de TI',              'value': 10},
+    {'name': 'Gestion de TI',              'value': 10},
     {'name': 'Otros',                       'value': 15},
   ];
 
-  // ── Books ───────────────────────────────────────────────────────────────
   static final List<Book> books = [
-    const Book(
-      isbn: '978-0-13-110362-7',
-      title: 'The C Programming Language',
-      author: 'Brian W. Kernighan, Dennis M. Ritchie',
-      publisher: 'Prentice Hall',
-      year: 1988,
-      topic: 'Ciencias de la Computación',
-      description: 'El libro de referencia definitivo para el lenguaje C.',
-      totalCopies: 5,
-      availableCopies: 3,
-    ),
-    const Book(
-      isbn: '978-0-201-63361-0',
-      title: 'Design Patterns',
-      author: 'Gang of Four',
-      publisher: 'Addison-Wesley',
-      year: 1994,
-      topic: 'Ingeniería de Software',
-      description: 'Patrones de diseño reutilizables en software orientado a objetos.',
-      totalCopies: 4,
-      availableCopies: 2,
-    ),
-    const Book(
-      isbn: '978-0-13-468599-1',
-      title: 'Clean Code',
-      author: 'Robert C. Martin',
-      publisher: 'Prentice Hall',
-      year: 2008,
-      topic: 'Ingeniería de Software',
-      description: 'Guía para escribir código limpio y mantenible.',
-      totalCopies: 6,
-      availableCopies: 4,
-    ),
-    const Book(
-      isbn: '978-0-07-352332-3',
-      title: 'Database System Concepts',
-      author: 'Abraham Silberschatz',
-      publisher: 'McGraw-Hill',
-      year: 2019,
-      topic: 'Bases de Datos',
-      description: 'Fundamentos de sistemas de bases de datos.',
-      totalCopies: 3,
-      availableCopies: 1,
-    ),
-    const Book(
-      isbn: '978-0-13-235088-4',
-      title: 'Introduction to Algorithms',
-      author: 'Thomas H. Cormen',
-      publisher: 'MIT Press',
-      year: 2009,
-      topic: 'Ciencias de la Computación',
-      description: 'Referencia comprensiva de algoritmos y estructuras de datos.',
-      totalCopies: 4,
-      availableCopies: 0,
-    ),
-    const Book(
-      isbn: '978-1-491-95038-9',
-      title: 'Fluent Python',
-      author: 'Luciano Ramalho',
-      publisher: "O'Reilly",
-      year: 2022,
-      topic: 'Ciencias de la Computación',
-      description: 'Python idiomático y de alto rendimiento.',
-      totalCopies: 3,
-      availableCopies: 2,
-    ),
+    const Book(isbn: '978-0134685991', title: 'Effective Java',                       author: 'Joshua Bloch',          publisher: 'Addison-Wesley',      year: 2018, topic: 'Ciencias de la Computacion', section: 'Programacion',           price: 45.99, totalCopies: 5, availableCopies: 3),
+    const Book(isbn: '978-0596517748', title: 'JavaScript: The Good Parts',           author: 'Douglas Crockford',     publisher: "O'Reilly Media",      year: 2008, topic: 'Ciencias de la Computacion', section: 'Programacion',           price: 32.50, totalCopies: 3, availableCopies: 1),
+    const Book(isbn: '978-0321125217', title: 'Domain-Driven Design',                 author: 'Eric Evans',            publisher: 'Addison-Wesley',      year: 2003, topic: 'Ingenieria de Software',      section: 'Ingenieria',             price: 54.99, totalCopies: 4, availableCopies: 2),
+    const Book(isbn: '978-0262033848', title: 'Introduction to Algorithms',           author: 'Thomas H. Cormen',      publisher: 'MIT Press',           year: 2009, topic: 'Ciencias de la Computacion', section: 'Algoritmos',             price: 89.99, totalCopies: 8, availableCopies: 5),
+    const Book(isbn: '978-0134494166', title: 'Clean Architecture',                   author: 'Robert C. Martin',      publisher: 'Prentice Hall',       year: 2017, topic: 'Ingenieria de Software',      section: 'Ingenieria',             price: 42.00, totalCopies: 6, availableCopies: 4),
+    const Book(isbn: '978-1449355739', title: 'Designing Data-Intensive Applications',author: 'Martin Kleppmann',      publisher: "O'Reilly Media",      year: 2017, topic: 'Sistemas de Bases de Datos', section: 'Bases de Datos',         price: 62.50, totalCopies: 4, availableCopies: 0),
+    const Book(isbn: '978-0201633610', title: 'Design Patterns',                      author: 'Erich Gamma',           publisher: 'Addison-Wesley',      year: 1994, topic: 'Ingenieria de Software',      section: 'Ingenieria',             price: 49.99, totalCopies: 5, availableCopies: 3),
+    const Book(isbn: '978-0137081073', title: 'The Pragmatic Programmer',             author: 'David Thomas',          publisher: 'Addison-Wesley',      year: 2019, topic: 'Ingenieria de Software',      section: 'Ingenieria',             price: 38.75, totalCopies: 7, availableCopies: 6),
+    const Book(isbn: '978-0596007126', title: 'Head First Design Patterns',           author: 'Eric Freeman',          publisher: "O'Reilly Media",      year: 2004, topic: 'Ingenieria de Software',      section: 'Ingenieria',             price: 44.50, totalCopies: 3, availableCopies: 2),
+    const Book(isbn: '978-0135957059', title: 'The Phoenix Project',                  author: 'Gene Kim',              publisher: 'IT Revolution Press', year: 2013, topic: 'Gestion de TI',              section: 'Gestion',                price: 28.99, totalCopies: 4, availableCopies: 1),
+    const Book(isbn: '978-0-13-468599-1', title: 'Fundamentos de Programacion',       author: 'Luis Joyanes Aguilar',  publisher: 'McGraw-Hill',         year: 2008, topic: 'Ciencias de la Computacion', section: 'Programacion',           price: 52.00, totalCopies: 6, availableCopies: 4),
+    const Book(isbn: '978-607-15-0349-0', title: 'Calculo Diferencial',               author: 'Granville',             publisher: 'Limusa',              year: 2010, topic: 'Matematicas',                section: 'Matematicas',            price: 38.00, totalCopies: 8, availableCopies: 6),
+    const Book(isbn: '978-0-262-03384-8', title: 'Inteligencia Artificial Moderna',   author: 'Stuart Russell',        publisher: 'Pearson',             year: 2020, topic: 'Ciencias de la Computacion', section: 'Inteligencia Artificial', price: 95.00, totalCopies: 3, availableCopies: 0),
+    const Book(isbn: '978-0-321-75640-4', title: 'Fisica Universitaria Vol. 1',       author: 'Sears y Zemansky',      publisher: 'Pearson',             year: 2013, topic: 'Fisica',                     section: 'Ciencias',               price: 68.00, totalCopies: 10, availableCopies: 7),
+    const Book(isbn: '978-607-15-0567-8', title: 'Quimica Organica',                  author: 'Morrison y Boyd',       publisher: 'Pearson',             year: 2015, topic: 'Quimica',                    section: 'Ciencias',               price: 72.00, totalCopies: 5, availableCopies: 3),
+    const Book(isbn: '978-968-18-6071-5', title: 'Historia Universal Contemporanea',  author: 'Gloria M. Delgado',     publisher: 'Pearson',             year: 2006, topic: 'Historia',                   section: 'Humanidades',            price: 42.00, totalCopies: 7, availableCopies: 5),
+    const Book(isbn: '978-970-10-6104-6', title: 'Estructuras de Datos en Java',      author: 'Mark Allen Weiss',      publisher: 'Pearson',             year: 2012, topic: 'Ciencias de la Computacion', section: 'Programacion',           price: 58.00, totalCopies: 5, availableCopies: 3),
+    const Book(isbn: '978-607-32-1444-4', title: 'Algebra Lineal',                    author: 'Stanley I. Grossman',   publisher: 'McGraw-Hill',         year: 2014, topic: 'Matematicas',                section: 'Matematicas',            price: 48.00, totalCopies: 9, availableCopies: 6),
   ];
 
-  // ── Users ───────────────────────────────────────────────────────────────
   static final List<AppUser> users = [
-    AppUser(
-      id: 'admin-001',
-      name: 'Ana García',
-      email: 'ana.garcia@ducky.edu',
-      role: AppUserRole.administrator,
-      phone: '555-0001',
-      isActive: true,
-      createdAt: DateTime(2023, 1, 15),
-    ),
-    AppUser(
-      id: 'lib-001',
-      name: 'Carlos Mendoza',
-      email: 'carlos.mendoza@ducky.edu',
-      role: AppUserRole.librarian,
-      phone: '555-0002',
-      isActive: true,
-      createdAt: DateTime(2023, 3, 10),
-    ),
-    AppUser(
-      id: 'student-001',
-      name: 'María López',
-      email: 'maria.lopez@ducky.edu',
-      role: AppUserRole.student,
-      isActive: true,
-      createdAt: DateTime(2024, 8, 20),
-    ),
-    AppUser(
-      id: 'student-002',
-      name: 'Juan Pérez',
-      email: 'juan.perez@ducky.edu',
-      role: AppUserRole.student,
-      isActive: true,
-      createdAt: DateTime(2024, 8, 20),
-    ),
-    AppUser(
-      id: 'prof-001',
-      name: 'Dr. Roberto Silva',
-      email: 'roberto.silva@ducky.edu',
-      role: AppUserRole.professor,
-      phone: '555-0010',
-      isActive: true,
-      createdAt: DateTime(2022, 9, 1),
-    ),
+    AppUser(id: 'U001', name: 'Emily Johnson',       email: 'emily.johnson@university.edu',  role: AppUserRole.student,       isActive: true,  createdAt: DateTime(2024, 1, 14)),
+    AppUser(id: 'U002', name: 'Dr. Michael Chen',    email: 'm.chen@university.edu',         role: AppUserRole.professor,     isActive: true,  createdAt: DateTime(2023, 9, 1)),
+    AppUser(id: 'U003', name: 'Sarah Williams',      email: 's.williams@university.edu',     role: AppUserRole.librarian,     isActive: true,  createdAt: DateTime(2023, 3, 10)),
+    AppUser(id: 'U004', name: 'James Rodriguez',     email: 'j.rodriguez@university.edu',    role: AppUserRole.student,       isActive: true,  createdAt: DateTime(2024, 8, 20)),
+    AppUser(id: 'U005', name: 'Dr. Lisa Anderson',   email: 'l.anderson@university.edu',     role: AppUserRole.professor,     isActive: true,  createdAt: DateTime(2022, 9, 1)),
+    AppUser(id: 'U006', name: 'Robert Taylor',       email: 'r.taylor@university.edu',       role: AppUserRole.student,       isActive: false, createdAt: DateTime(2024, 8, 20)),
+    AppUser(id: 'U007', name: 'Maria Garcia',        email: 'm.garcia@university.edu',       role: AppUserRole.administrator, isActive: true,  createdAt: DateTime(2021, 1, 1)),
+    AppUser(id: 'U008', name: 'David Kim',           email: 'd.kim@university.edu',          role: AppUserRole.student,       isActive: true,  createdAt: DateTime(2024, 8, 20)),
+    AppUser(id: 'student-001', name: 'Maria Garcia Lopez',   email: 'm.garcial@ducky.edu',  role: AppUserRole.student,       isActive: true,  createdAt: DateTime(2024, 8, 20)),
+    AppUser(id: 'student-002', name: 'Carlos Rodriguez Perez', email: 'c.rodriguez@ducky.edu', role: AppUserRole.student,    isActive: true,  createdAt: DateTime(2024, 8, 20)),
+    AppUser(id: 'professor-001', name: 'Dr. Juan Martinez',  email: 'j.martinez@ducky.edu', role: AppUserRole.professor,     isActive: true,  createdAt: DateTime(2022, 9, 1)),
   ];
 
-  // ── Copies ──────────────────────────────────────────────────────────────
   static final List<BookCopy> copies = [
-    BookCopy(
-      id: 'COPY-001',
-      isbn: '978-0-13-110362-7',
-      bookTitle: 'The C Programming Language',
-      status: CopyStatus.available,
-      location: 'Estante A-1',
-      acquisitionDate: DateTime(2020, 3, 1),
-    ),
-    BookCopy(
-      id: 'COPY-002',
-      isbn: '978-0-13-110362-7',
-      bookTitle: 'The C Programming Language',
-      status: CopyStatus.borrowed,
-      location: 'Estante A-1',
-      acquisitionDate: DateTime(2020, 3, 1),
-    ),
-    BookCopy(
-      id: 'COPY-003',
-      isbn: '978-0-201-63361-0',
-      bookTitle: 'Design Patterns',
-      status: CopyStatus.available,
-      location: 'Estante B-2',
-      acquisitionDate: DateTime(2021, 6, 15),
-    ),
-    BookCopy(
-      id: 'COPY-004',
-      isbn: '978-0-13-468599-1',
-      bookTitle: 'Clean Code',
-      status: CopyStatus.damaged,
-      location: 'Estante B-3',
-      notes: 'Páginas dañadas por humedad',
-      acquisitionDate: DateTime(2021, 1, 10),
-    ),
+    BookCopy(id: 'C001', isbn: '978-0134685991', bookTitle: 'Effective Java',      status: CopyStatus.available, location: 'Seccion A, Estante 3, Fila 2', condition: 'Bueno',    acquisitionDate: DateTime(2020, 1, 1)),
+    BookCopy(id: 'C002', isbn: '978-0134685991', bookTitle: 'Effective Java',      status: CopyStatus.borrowed,  location: 'Seccion A, Estante 3, Fila 2', condition: 'Bueno',    acquisitionDate: DateTime(2020, 1, 1)),
+    BookCopy(id: 'C003', isbn: '978-0134685991', bookTitle: 'Effective Java',      status: CopyStatus.available, location: 'Seccion A, Estante 3, Fila 2', condition: 'Regular',  acquisitionDate: DateTime(2021, 3, 1)),
+    BookCopy(id: 'C004', isbn: '978-0596517748', bookTitle: 'JavaScript: The Good Parts', status: CopyStatus.available, location: 'Seccion B, Estante 1', condition: 'Bueno', acquisitionDate: DateTime(2020, 6, 1)),
+    BookCopy(id: 'C005', isbn: '978-0596517748', bookTitle: 'JavaScript: The Good Parts', status: CopyStatus.borrowed,  location: 'Seccion B, Estante 1', condition: 'Bueno', acquisitionDate: DateTime(2020, 6, 1)),
   ];
 
-  // ── Loans ───────────────────────────────────────────────────────────────
   static final List<Loan> loans = [
-    Loan(
-      id: 'LOAN-001',
-      userId: 'student-001',
-      userName: 'María López',
-      copyId: 'COPY-002',
-      bookTitle: 'The C Programming Language',
-      bookIsbn: '978-0-13-110362-7',
-      loanDate: DateTime.now().subtract(const Duration(days: 5)),
-      dueDate: DateTime.now().add(const Duration(days: 9)),
-      status: LoanStatus.active,
-      renewalCount: 0,
-    ),
-    Loan(
-      id: 'LOAN-002',
-      userId: 'student-002',
-      userName: 'Juan Pérez',
-      copyId: 'COPY-003',
-      bookTitle: 'Design Patterns',
-      bookIsbn: '978-0-201-63361-0',
-      loanDate: DateTime.now().subtract(const Duration(days: 20)),
-      dueDate: DateTime.now().subtract(const Duration(days: 6)),
-      status: LoanStatus.overdue,
-      fine: 12.0,
-      renewalCount: 1,
-    ),
+    Loan(id: 'L001', userId: 'U001', userName: 'Emily Johnson', copyId: 'C002', bookTitle: 'Effective Java',            bookIsbn: '978-0134685991', loanDate: DateTime(2026, 2, 19), dueDate: DateTime(2026, 3, 19), status: LoanStatus.active,  renewalCount: 0),
+    Loan(id: 'L002', userId: 'U001', userName: 'Emily Johnson', copyId: 'C005', bookTitle: 'JavaScript: The Good Parts', bookIsbn: '978-0596517748', loanDate: DateTime(2026, 2, 14), dueDate: DateTime(2026, 3, 14), status: LoanStatus.active,  renewalCount: 0),
+    Loan(id: 'L003', userId: 'U001', userName: 'Emily Johnson', copyId: 'C009', bookTitle: 'Introduction to Algorithms', bookIsbn: '978-0262033848', loanDate: DateTime(2026, 1, 29), dueDate: DateTime(2026, 2, 28), status: LoanStatus.overdue, renewalCount: 0),
+    Loan(id: 'L004', userId: 'U004', userName: 'James Rodriguez', copyId: 'C004', bookTitle: 'JavaScript: The Good Parts', bookIsbn: '978-0596517748', loanDate: DateTime(2026, 3, 1), dueDate: DateTime(2026, 3, 31), status: LoanStatus.active, renewalCount: 0),
   ];
 
-  // ── Purchase Requests ───────────────────────────────────────────────────
   static final List<PurchaseRequest> purchaseRequests = [
-    PurchaseRequest(
-      id: 'PR-001',
-      isbn: '978-0-13-468599-1',
-      bookTitle: 'Clean Architecture',
-      requestedBy: 'Carlos Mendoza',
-      quantity: 3,
-      justification: 'Alta demanda por parte de alumnos de Ingeniería de Software.',
-      status: PurchaseStatus.pending,
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    PurchaseRequest(
-      id: 'PR-002',
-      isbn: '978-1-491-95038-9',
-      bookTitle: 'Fluent Python',
-      requestedBy: 'Dr. Roberto Silva',
-      quantity: 2,
-      justification: 'Material de apoyo para el curso de Programación Avanzada.',
-      status: PurchaseStatus.approved,
-      createdAt: DateTime.now().subtract(const Duration(days: 10)),
-      reviewedBy: 'Ana García',
-      reviewNotes: 'Aprobado. Presupuesto disponible.',
-    ),
+    PurchaseRequest(id: 'PR-001', isbn: '978-0134494166', bookTitle: 'Clean Architecture',  requestedBy: 'Sarah Williams',    quantity: 3, justification: 'Alta demanda.', status: PurchaseStatus.pending,  createdAt: DateTime(2026, 3, 20)),
+    PurchaseRequest(id: 'PR-002', isbn: '978-1449355739', bookTitle: 'Designing Data-Intensive Applications', requestedBy: 'Dr. Michael Chen', quantity: 2, justification: 'Material de apoyo.', status: PurchaseStatus.approved, createdAt: DateTime(2026, 3, 10), reviewedBy: 'Maria Garcia', reviewNotes: 'Aprobado.'),
   ];
 }
