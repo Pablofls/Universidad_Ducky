@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
@@ -41,11 +42,17 @@ class _LoginPageState extends State<LoginPage> {
     if (err != null) {
       setState(() => _error = err);
     } else {
-      final user = auth.currentUser!;
-      if (user.role == UserRole.student) {
+      if (!kIsWeb) {
+        // App móvil — siempre va a búsqueda de libros
         context.go('/app');
       } else {
-        context.go(AppRoutes.dashboard);
+        // Web — navega según rol
+        final user = auth.currentUser!;
+        if (user.role == UserRole.student) {
+          context.go(AppRoutes.studentSearch);
+        } else {
+          context.go(AppRoutes.dashboard);
+        }
       }
     }
   }
@@ -96,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 4),
                       const Text('Selecciona la plataforma e ingresa tus credenciales',
                         style: TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       _fieldLabel('Correo Electrónico'),
                       const SizedBox(height: 6),
