@@ -93,29 +93,34 @@ class Loan {
   });
 }
 
-enum PurchaseStatus { pending, approved, rejected }
+enum PurchaseStatus { pending, approved, rejected, purchased }
 extension PurchaseStatusExtension on PurchaseStatus {
   String get label {
     switch (this) {
-      case PurchaseStatus.pending:  return 'Pendiente';
-      case PurchaseStatus.approved: return 'Aprobada';
-      case PurchaseStatus.rejected: return 'Rechazada';
+      case PurchaseStatus.pending:   return 'Pendiente';
+      case PurchaseStatus.approved:  return 'Aprobado';
+      case PurchaseStatus.rejected:  return 'Rechazado';
+      case PurchaseStatus.purchased: return 'Comprado';
     }
   }
 }
 
 class PurchaseRequest {
-  final String id, isbn, bookTitle, requestedBy, justification;
+  final String id, isbn, bookTitle, author, requestedBy, justification;
   final int quantity;
+  final double unitPrice;
   final PurchaseStatus status;
   final DateTime createdAt;
   final String? reviewedBy, reviewNotes;
   const PurchaseRequest({
     required this.id, required this.isbn, required this.bookTitle,
-    required this.requestedBy, required this.quantity,
-    required this.justification, required this.status, required this.createdAt,
+    required this.author, required this.requestedBy, required this.quantity,
+    required this.unitPrice, required this.justification,
+    required this.status, required this.createdAt,
     this.reviewedBy, this.reviewNotes,
   });
+
+  double get total => quantity * unitPrice;
 }
 
 class DashboardStats {

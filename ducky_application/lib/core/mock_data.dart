@@ -78,7 +78,10 @@ class MockData {
   ];
 
   static final List<PurchaseRequest> purchaseRequests = [
-    PurchaseRequest(id: 'PR-001', isbn: '978-0134494166', bookTitle: 'Clean Architecture',  requestedBy: 'Sarah Williams',    quantity: 3, justification: 'Alta demanda.', status: PurchaseStatus.pending,  createdAt: DateTime(2026, 3, 20)),
-    PurchaseRequest(id: 'PR-002', isbn: '978-1449355739', bookTitle: 'Designing Data-Intensive Applications', requestedBy: 'Dr. Michael Chen', quantity: 2, justification: 'Material de apoyo.', status: PurchaseStatus.approved, createdAt: DateTime(2026, 3, 10), reviewedBy: 'Maria Garcia', reviewNotes: 'Aprobado.'),
+    PurchaseRequest(id: 'PR001', isbn: '978-0201896831', bookTitle: 'The Art of Computer Programming', author: 'Donald E. Knuth',    quantity: 5, unitPrice: 199.99, requestedBy: 'Dr. Michael Chen',  justification: 'Material de referencia esencial para algoritmos avanzados.', status: PurchaseStatus.pending,   createdAt: DateTime(2026, 3, 5)),
+    PurchaseRequest(id: 'PR002', isbn: '978-0262033848', bookTitle: 'Introduction to Algorithms',       author: 'Thomas H. Cormen', quantity: 3, unitPrice:  89.99, requestedBy: 'Sarah Williams',     justification: 'Reposicion de ejemplares danados.', status: PurchaseStatus.approved,  createdAt: DateTime(2026, 2, 25), reviewedBy: 'Maria Garcia', reviewNotes: 'Aprobado. Presupuesto disponible.'),
+    PurchaseRequest(id: 'PR003', isbn: '978-1107002173', bookTitle: 'Quantum Computing for Computer Scientists', author: 'Noson S. Yanofsky', quantity: 2, unitPrice: 125.50, requestedBy: 'Dr. Lisa Anderson', justification: 'Nuevo curso de computacion cuantica.', status: PurchaseStatus.rejected,  createdAt: DateTime(2026, 2, 15), reviewedBy: 'Maria Garcia', reviewNotes: 'Presupuesto insuficiente este semestre.'),
+    PurchaseRequest(id: 'PR004', isbn: '978-0134685991', bookTitle: 'Effective Java',                   author: 'Joshua Bloch',     quantity: 4, unitPrice:  45.99, requestedBy: 'Sarah Williams',     justification: 'Alta demanda en curso de programacion.', status: PurchaseStatus.purchased, createdAt: DateTime(2026, 1, 20), reviewedBy: 'Maria Garcia', reviewNotes: 'Comprado y recibido.'),
+    PurchaseRequest(id: 'PR005', isbn: '978-0262018029', bookTitle: 'Machine Learning: A Probabilistic Perspective', author: 'Kevin P. Murphy', quantity: 6, unitPrice: 95.00, requestedBy: 'Dr. Michael Chen', justification: 'Material para nuevo curso de ML.', status: PurchaseStatus.pending, createdAt: DateTime(2026, 3, 8)),
   ];
 }
