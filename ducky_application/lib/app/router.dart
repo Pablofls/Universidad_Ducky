@@ -21,6 +21,7 @@ import '../features/purchases/purchase_detail_page.dart';
 import '../features/purchases/create_purchase_page.dart';
 import '../features/permissions/permissions_page.dart';
 import '../features/student/student_search_page.dart';
+import '../features/student/student_search_mobile_page.dart';
 import '../shared/widgets/app_scaffold.dart';
 import '../shared/widgets/app_layout.dart';
 
@@ -122,7 +123,7 @@ GoRouter createRouter(AuthProvider authProvider) {
         routes: [
           GoRoute(
             path: '/app',
-            pageBuilder: (_, __) => _noAnimPage(const StudentSearchPage()),
+            pageBuilder: (_, __) => _noAnimPage(const StudentSearchMobilePage()),
           ),
         ],
       ),
