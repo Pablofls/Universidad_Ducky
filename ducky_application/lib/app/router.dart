@@ -22,6 +22,7 @@ import '../features/purchases/create_purchase_page.dart';
 import '../features/permissions/permissions_page.dart';
 import '../features/student/student_search_page.dart';
 import '../shared/widgets/app_scaffold.dart';
+import '../shared/widgets/app_layout.dart';
 
 class AppRoutes {
   static const login          = '/login';
@@ -112,6 +113,17 @@ GoRouter createRouter(AuthProvider authProvider) {
               pageBuilder: (_, __) => _noAnimPage(const PermissionsPage())),
           GoRoute(path: AppRoutes.studentSearch,
               pageBuilder: (_, __) => _noAnimPage(const StudentSearchPage())),
+        ],
+      ),
+
+      // ── Mobile app shell ─────────────────────────────────────────────
+      ShellRoute(
+        builder: (context, state, child) => AppLayout(child: child),
+        routes: [
+          GoRoute(
+            path: '/app',
+            pageBuilder: (_, __) => _noAnimPage(const StudentSearchPage()),
+          ),
         ],
       ),
     ],

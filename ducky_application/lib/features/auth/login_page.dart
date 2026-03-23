@@ -43,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       final user = auth.currentUser!;
       if (user.role == UserRole.student) {
-        context.go(AppRoutes.studentSearch);
+        context.go('/app');
       } else {
         context.go(AppRoutes.dashboard);
       }
