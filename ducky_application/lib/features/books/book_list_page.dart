@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/utils/export_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../app/router.dart';
@@ -76,19 +77,58 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   void _exportToPrint() {
-    // Compatible con web y movil
     final filtered = _filtered;
+    final now = DateTime.now();
+    final months = ['','enero','febrero','marzo','abril','mayo','junio',
+        'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    final dateStr = '${now.day} de ${months[now.month]} de ${now.year}';
     final totalCopies = filtered.fold(0, (s, b) => s + b.totalCopies);
     final totalAvail  = filtered.fold(0, (s, b) => s + b.availableCopies);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(
-          'Exportando \${filtered.length} libros  '
-          '\$totalCopies ejemplares  \$totalAvail disponibles'),
-      backgroundColor: const Color(0xFF0E7334),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      duration: const Duration(seconds: 3),
-    ));
+
+    final rows = filtered.map((b) {
+      final color = b.availableCopies == 0
+          ? '#EF4444' : b.availableCopies <= 2 ? '#F59E0B' : '#0E7334';
+      return '<tr>'
+          '<td style="font-weight:600;color:#0E7334">${b.isbn}</td>'
+          '<td>${b.title}</td>'
+          '<td>${b.author}</td>'
+          '<td>${b.topic}</td>'
+          '<td>${b.section}</td>'
+          '<td>${b.publisher}</td>'
+          '<td>\$${b.price.toStringAsFixed(2)}</td>'
+          '<td style="color:$color;font-weight:700">${b.availableCopies}</td>'
+          '<td>${b.totalCopies}</td>'
+          '</tr>';
+    }).join('');
+
+    final html = '''<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;margin:32px;color:#111}
+  h1{text-align:center;color:#0E7334;font-size:22px;margin:0}
+  .sub{text-align:center;color:#555;font-size:13px;margin:4px 0 2px}
+  .date{text-align:center;color:#888;font-size:11px;margin-bottom:20px}
+  hr{border:2px solid #0E7334;margin:12px 0 16px}
+  .summary{font-size:13px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{background:#0E7334;color:white;padding:7px 6px;text-align:left;font-size:10px;letter-spacing:.4px}
+  td{padding:6px;border-bottom:1px solid #eee}
+  .footer{text-align:center;font-size:10px;color:#aaa;margin-top:24px}
+</style></head>
+<body>
+<h1>Universidad Ducky</h1>
+<div class="sub">Catálogo de Libros - Sistema de Gestión de Biblioteca</div>
+<div class="date">Generado el $dateStr</div>
+<hr/>
+<div class="summary"><b>Total de libros:</b> ${filtered.length} | <b>Ejemplares totales:</b> $totalCopies | <b>Disponibles:</b> $totalAvail</div>
+<table>
+<tr><th>ISBN</th><th>TÍTULO</th><th>AUTOR</th><th>TEMA</th><th>SECCIÓN</th><th>EDITORIAL</th><th>PRECIO</th><th>DISP.</th><th>TOTAL</th></tr>
+$rows
+</table>
+<div class="footer">Este documento fue generado automáticamente por el Sistema de Gestión de Biblioteca de la Universidad Ducky.</div>
+</body></html>''';
+
+    exportHtml(html, 'catalogo_libros.html');
   }
 
 
