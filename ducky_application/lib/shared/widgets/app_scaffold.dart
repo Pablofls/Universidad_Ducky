@@ -73,20 +73,10 @@ class _Sidebar extends StatelessWidget {
             child: Row(
               children: [
                 // Logo
-                
-                Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFF5E6C8),
-                    border: Border.all(color: const Color(0xFFB8960C), width: 2),
-                  ),
-                  child: const Center(
-                    child: Text('D', style: TextStyle(
-                      color: Color(0xFF0E7334),
-                      fontSize: 20, fontWeight: FontWeight.w900,
-                    )),
-                  ),
+                Image.asset(
+                  'assets/images/logo_ducky.png',
+                  width: 44, height: 44,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(width: 10),
                 Column(
