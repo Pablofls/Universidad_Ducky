@@ -87,9 +87,9 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(path: AppRoutes.bookCreate,
               pageBuilder: (_, __) => _noAnimPage(const CreateBookPage())),
           GoRoute(path: AppRoutes.bookDetail,
-              pageBuilder: (_, s) => _noAnimPage(BookDetailPage(isbn: s.pathParameters['isbn']!))),
+              pageBuilder: (_, s) => _noAnimPage(BookDetailPage(isbn: Uri.decodeComponent(s.pathParameters['isbn']!)))),
           GoRoute(path: AppRoutes.bookEdit,
-              pageBuilder: (_, s) => _noAnimPage(EditBookPage(isbn: s.pathParameters['isbn']!))),
+              pageBuilder: (_, s) => _noAnimPage(EditBookPage(isbn: Uri.decodeComponent(s.pathParameters['isbn']!)))),
 
           GoRoute(path: AppRoutes.copies,
               pageBuilder: (_, __) => _noAnimPage(const CopyListPage())),

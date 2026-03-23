@@ -55,11 +55,19 @@ class MockData {
   ];
 
   static final List<BookCopy> copies = [
-    BookCopy(id: 'C001', isbn: '978-0134685991', bookTitle: 'Effective Java',      status: CopyStatus.available, location: 'Seccion A, Estante 3, Fila 2', condition: 'Bueno',    acquisitionDate: DateTime(2020, 1, 1)),
-    BookCopy(id: 'C002', isbn: '978-0134685991', bookTitle: 'Effective Java',      status: CopyStatus.borrowed,  location: 'Seccion A, Estante 3, Fila 2', condition: 'Bueno',    acquisitionDate: DateTime(2020, 1, 1)),
-    BookCopy(id: 'C003', isbn: '978-0134685991', bookTitle: 'Effective Java',      status: CopyStatus.available, location: 'Seccion A, Estante 3, Fila 2', condition: 'Regular',  acquisitionDate: DateTime(2021, 3, 1)),
-    BookCopy(id: 'C004', isbn: '978-0596517748', bookTitle: 'JavaScript: The Good Parts', status: CopyStatus.available, location: 'Seccion B, Estante 1', condition: 'Bueno', acquisitionDate: DateTime(2020, 6, 1)),
-    BookCopy(id: 'C005', isbn: '978-0596517748', bookTitle: 'JavaScript: The Good Parts', status: CopyStatus.borrowed,  location: 'Seccion B, Estante 1', condition: 'Bueno', acquisitionDate: DateTime(2020, 6, 1)),
+    BookCopy(id: 'C001', isbn: '978-0134685991', bookTitle: 'Effective Java',               status: CopyStatus.available, location: 'Seccion A, Estante 3, Fila 2', condition: 'Bueno',   acquisitionDate: DateTime(2020, 1, 1)),
+    BookCopy(id: 'C002', isbn: '978-0134685991', bookTitle: 'Effective Java',               status: CopyStatus.borrowed,  location: 'Seccion A, Estante 3, Fila 2', condition: 'Bueno',   acquisitionDate: DateTime(2020, 1, 1)),
+    BookCopy(id: 'C003', isbn: '978-0134685991', bookTitle: 'Effective Java',               status: CopyStatus.available, location: 'Seccion A, Estante 3, Fila 2', condition: 'Regular', acquisitionDate: DateTime(2021, 3, 1)),
+    BookCopy(id: 'C004', isbn: '978-0596517748', bookTitle: 'JavaScript: The Good Parts',   status: CopyStatus.available, location: 'Seccion A, Estante 5, Fila 1', condition: 'Bueno',   acquisitionDate: DateTime(2020, 6, 1)),
+    BookCopy(id: 'C005', isbn: '978-0596517748', bookTitle: 'JavaScript: The Good Parts',   status: CopyStatus.borrowed,  location: 'Seccion A, Estante 5, Fila 1', condition: 'Bueno',   acquisitionDate: DateTime(2020, 6, 1)),
+    BookCopy(id: 'C006', isbn: '978-0321125217', bookTitle: 'Domain-Driven Design',         status: CopyStatus.reserved,  location: 'Seccion B, Estante 2, Fila 3', condition: 'Nuevo',   acquisitionDate: DateTime(2022, 1, 1)),
+    BookCopy(id: 'C007', isbn: '978-0321125217', bookTitle: 'Domain-Driven Design',         status: CopyStatus.available, location: 'Seccion B, Estante 2, Fila 3', condition: 'Bueno',   acquisitionDate: DateTime(2022, 1, 1)),
+    BookCopy(id: 'C008', isbn: '978-0262033848', bookTitle: 'Introduction to Algorithms',   status: CopyStatus.available, location: 'Seccion A, Estante 1, Fila 1', condition: 'Bueno',   acquisitionDate: DateTime(2021, 5, 1)),
+    BookCopy(id: 'C009', isbn: '978-0262033848', bookTitle: 'Introduction to Algorithms',   status: CopyStatus.borrowed,  location: 'Seccion A, Estante 1, Fila 1', condition: 'Regular', acquisitionDate: DateTime(2021, 5, 1)),
+    BookCopy(id: 'C010', isbn: '978-0134494166', bookTitle: 'Clean Architecture',           status: CopyStatus.internal,  location: 'Sala de Referencia, Estante 1', condition: 'Nuevo',  acquisitionDate: DateTime(2023, 2, 1)),
+    BookCopy(id: 'COPY-001', isbn: '978-0-13-468599-1', bookTitle: 'Fundamentos de Programacion', status: CopyStatus.available, location: 'Seccion B, Estante 4, Fila 1', condition: 'Bueno', acquisitionDate: DateTime(2021, 1, 1)),
+    BookCopy(id: 'COPY-002', isbn: '978-0201633610', bookTitle: 'Design Patterns',          status: CopyStatus.available, location: 'Seccion B, Estante 3, Fila 2', condition: 'Bueno',   acquisitionDate: DateTime(2020, 8, 1)),
+    BookCopy(id: 'COPY-003', isbn: '978-0201633610', bookTitle: 'Design Patterns',          status: CopyStatus.borrowed,  location: 'Seccion B, Estante 3, Fila 2', condition: 'Regular', acquisitionDate: DateTime(2020, 8, 1)),
   ];
 
   static final List<Loan> loans = [

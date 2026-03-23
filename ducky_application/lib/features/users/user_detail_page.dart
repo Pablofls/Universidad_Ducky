@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:intl/intl.dart';
 import '../../core/mock_data.dart';
 import '../../core/models/models.dart';
 
@@ -59,7 +58,7 @@ class UserDetailPage extends StatelessWidget {
                 _infoRow(LucideIcons.mail, 'Email', user.email),
                 const Divider(height: 24, color: Color(0xFFF3F4F6)),
                 _infoRow(LucideIcons.calendar, 'Member Since',
-                    DateFormat('MMMM d, y').format(user.createdAt)),
+                    user.createdAt.toString().split(' ')[0]),
                 if (user.phone != null) ...[
                   const Divider(height: 24, color: Color(0xFFF3F4F6)),
                   _infoRow(LucideIcons.phone, 'Phone', user.phone!),
@@ -90,8 +89,8 @@ class UserDetailPage extends StatelessWidget {
                           Text('Copy ID: ${loan.copyId}',
                               style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
                           Text(
-                            'Borrowed: ${DateFormat('M/d/y').format(loan.loanDate)} - '
-                            'Due: ${DateFormat('M/d/y').format(loan.dueDate)}',
+                            'Borrowed: ${_fmtDate(loan.loanDate)} - '
+                            'Due: ${_fmtDate(loan.dueDate)}',
                             style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
                         ])),
                         Container(
@@ -193,4 +192,7 @@ class UserDetailPage extends StatelessWidget {
         Text(value, style: const TextStyle(fontSize: 14, color: Color(0xFF111827))),
       ]),
     ]);
+
+  String _fmtDate(DateTime d) => '\${d.month}/\${d.day}/\${d.year}';
+
 }

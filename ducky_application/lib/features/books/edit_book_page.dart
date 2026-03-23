@@ -42,7 +42,7 @@ class _EditBookPageState extends State<EditBookPage> {
           const Icon(LucideIcons.chevronRight, size: 14, color: Color(0xFF9CA3AF)),
           GestureDetector(onTap: () => context.go('/books'), child: const Text('Libros', style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)))),
           const Icon(LucideIcons.chevronRight, size: 14, color: Color(0xFF9CA3AF)),
-          GestureDetector(onTap: () => context.go('/books/${widget.isbn}'), child: Text(widget.isbn, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)))),
+          GestureDetector(onTap: () => context.go('/books/${Uri.encodeComponent(widget.isbn)}'), child: Text(widget.isbn, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)))),
           const Icon(LucideIcons.chevronRight, size: 14, color: Color(0xFF9CA3AF)),
           const Text('Editar', style: TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
         ]),
@@ -79,11 +79,11 @@ class _EditBookPageState extends State<EditBookPage> {
         ),
         const SizedBox(height: 20),
         Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          TextButton(onPressed: () => context.go('/books/${widget.isbn}'),
+          TextButton(onPressed: () => context.go('/books/${Uri.encodeComponent(widget.isbn)}'),
               child: const Text('Cancelar', style: TextStyle(color: Color(0xFF374151)))),
           const SizedBox(width: 12),
           ElevatedButton(
-            onPressed: () => context.go('/books/${widget.isbn}'),
+            onPressed: () => context.go('/books/${Uri.encodeComponent(widget.isbn)}'),
             style: ElevatedButton.styleFrom(
               backgroundColor: _green, foregroundColor: Colors.white, elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

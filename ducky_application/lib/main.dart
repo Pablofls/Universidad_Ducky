@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app/theme.dart';
 import 'app/router.dart';
 import 'core/auth/auth_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('es', null);
   runApp(
     ChangeNotifierProvider(
       create: (_) => AuthProvider(),
@@ -20,13 +23,7 @@ class DuckyApp extends StatefulWidget {
 }
 
 class _DuckyAppState extends State<DuckyApp> {
-  late final _router;
-
-  @override
-  void initState() {
-    super.initState();
-    _router = createRouter(context.read<AuthProvider>());
-  }
+  late final router = createRouter(context.read<AuthProvider>());
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +31,7 @@ class _DuckyAppState extends State<DuckyApp> {
       title: 'Sistema de Gestión Ducky',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      routerConfig: _router,
+      routerConfig: router,
     );
   }
 }

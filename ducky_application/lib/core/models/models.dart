@@ -15,12 +15,14 @@ class Book {
   });
 }
 
-enum CopyStatus { available, borrowed, damaged, lost }
+enum CopyStatus { available, borrowed, reserved, internal, damaged, lost }
 extension CopyStatusExtension on CopyStatus {
   String get label {
     switch (this) {
       case CopyStatus.available: return 'Disponible';
       case CopyStatus.borrowed:  return 'Prestado';
+      case CopyStatus.reserved:  return 'Reservado';
+      case CopyStatus.internal:  return 'Uso Interno';
       case CopyStatus.damaged:   return 'Danado';
       case CopyStatus.lost:      return 'Perdido';
     }

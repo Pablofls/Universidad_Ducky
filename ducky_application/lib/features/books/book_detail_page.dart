@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:intl/intl.dart';
 import '../../core/mock_data.dart';
 import '../../core/models/models.dart';
 
@@ -34,7 +33,7 @@ class BookDetailPage extends StatelessWidget {
             Text(book.author, style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280))),
           ])),
           ElevatedButton.icon(
-            onPressed: () => context.go('/books/${book.isbn}/edit'),
+            onPressed: () => context.go('/books/${Uri.encodeComponent(book.isbn)}/edit'),
             style: ElevatedButton.styleFrom(backgroundColor: _green, foregroundColor: Colors.white, elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -70,7 +69,7 @@ class BookDetailPage extends StatelessWidget {
                   Expanded(child: _BibField('Precio', '\$${book.price.toStringAsFixed(2)}')),
                 ]),
                 const SizedBox(height: 16),
-                _BibField('Agregado al Catalogo', DateFormat("d 'de' MMMM 'de' y", 'es').format(DateTime(book.year))),
+                _BibField('Agregado al Catalogo', '${book.year}'),
               ]),
             ),
             const SizedBox(width: 20),
@@ -188,6 +187,8 @@ class _CopyStatusBadge extends StatelessWidget {
     switch (status) {
       case CopyStatus.available: bg = const Color(0xFFD1FAE5); fg = const Color(0xFF059669); break;
       case CopyStatus.borrowed:  bg = const Color(0xFFFEF3C7); fg = const Color(0xFFD97706); break;
+      case CopyStatus.reserved:  bg = const Color(0xFFDBEAFE); fg = const Color(0xFF2563EB); break;
+      case CopyStatus.internal:  bg = const Color(0xFFE0E7FF); fg = const Color(0xFF4338CA); break;
       case CopyStatus.damaged:   bg = const Color(0xFFFEE2E2); fg = const Color(0xFFEF4444); break;
       case CopyStatus.lost:      bg = const Color(0xFFF3F4F6); fg = const Color(0xFF6B7280); break;
     }
