@@ -16,6 +16,8 @@ import '../features/copies/copy_list_page.dart';
 import '../features/copies/copy_detail_page.dart';
 import '../features/copies/create_copy_page.dart';
 import '../features/loans/loans_page.dart';
+import '../features/loans/loan_detail_page.dart';
+import '../features/loans/waitlist_page.dart';
 import '../features/purchases/purchase_list_page.dart';
 import '../features/purchases/purchase_detail_page.dart';
 import '../features/purchases/create_purchase_page.dart';
@@ -39,6 +41,11 @@ class AppRoutes {
   static const copyCreate     = '/copies/create';
   static const copyDetail     = '/copies/:id';
   static const loans          = '/loans';
+  static const loansNew       = '/loans/new';
+  static const loansReturn    = '/loans/return';
+  static const loansFines     = '/loans/fines';
+  static const loansWaitlist  = '/loans/waitlist';
+  static const loanDetail     = '/loans/:id';
   static const purchases      = '/purchases';
   static const purchaseCreate = '/purchases/create';
   static const purchaseDetail = '/purchases/:id';
@@ -102,6 +109,19 @@ GoRouter createRouter(AuthProvider authProvider) {
 
           GoRoute(path: AppRoutes.loans,
               pageBuilder: (_, __) => _noAnimPage(const LoansPage())),
+          GoRoute(path: AppRoutes.loansNew,
+              pageBuilder: (_, __) => _noAnimPage(const LoansPage(initialTab: 1))),
+          GoRoute(path: AppRoutes.loansReturn,
+              pageBuilder: (_, s) {
+                final loanId = s.uri.queryParameters['loanId'];
+                return _noAnimPage(LoansPage(initialTab: 2, loanId: loanId));
+              }),
+          GoRoute(path: AppRoutes.loansFines,
+              pageBuilder: (_, __) => _noAnimPage(const LoansPage(initialTab: 3))),
+          GoRoute(path: AppRoutes.loansWaitlist,
+              pageBuilder: (_, __) => _noAnimPage(const WaitlistPage())),
+          GoRoute(path: AppRoutes.loanDetail,
+              pageBuilder: (_, s) => _noAnimPage(LoanDetailPage(loanId: s.pathParameters['id']!))),
 
           GoRoute(path: AppRoutes.purchases,
               pageBuilder: (_, __) => _noAnimPage(const PurchaseListPage())),

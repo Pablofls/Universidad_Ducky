@@ -80,6 +80,7 @@ extension LoanStatusExtension on LoanStatus {
 
 class Loan {
   final String id, userId, userName, copyId, bookTitle, bookIsbn;
+  final double bookPrice;
   final DateTime loanDate, dueDate;
   final DateTime? returnDate;
   final LoanStatus status;
@@ -88,8 +89,45 @@ class Loan {
   const Loan({
     required this.id, required this.userId, required this.userName,
     required this.copyId, required this.bookTitle, required this.bookIsbn,
+    required this.bookPrice,
     required this.loanDate, required this.dueDate, this.returnDate,
     required this.status, this.fine, this.renewalCount = 0,
+  });
+}
+
+enum FineStatus { pending, paid }
+extension FineStatusExtension on FineStatus {
+  String get label {
+    switch (this) {
+      case FineStatus.pending: return 'Pendiente';
+      case FineStatus.paid:    return 'Pagado';
+    }
+  }
+}
+
+class Fine {
+  final String id, userId, userName, loanId, bookTitle;
+  final int daysOverdue;
+  final double amount;
+  final FineStatus status;
+  final DateTime createdAt;
+  final DateTime? paidAt;
+  const Fine({
+    required this.id, required this.userId, required this.userName,
+    required this.loanId, required this.bookTitle, required this.daysOverdue,
+    required this.amount, required this.status, required this.createdAt,
+    this.paidAt,
+  });
+}
+
+class WaitlistEntry {
+  final String id, bookIsbn, bookTitle, userId, userName;
+  final DateTime requestDate;
+  final int position;
+  const WaitlistEntry({
+    required this.id, required this.bookIsbn, required this.bookTitle,
+    required this.userId, required this.userName, required this.requestDate,
+    required this.position,
   });
 }
 

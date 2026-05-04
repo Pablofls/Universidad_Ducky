@@ -71,10 +71,26 @@ class MockData {
   ];
 
   static final List<Loan> loans = [
-    Loan(id: 'L001', userId: 'U001', userName: 'Emily Johnson', copyId: 'C002', bookTitle: 'Effective Java',            bookIsbn: '978-0134685991', loanDate: DateTime(2026, 2, 19), dueDate: DateTime(2026, 3, 19), status: LoanStatus.active,  renewalCount: 0),
-    Loan(id: 'L002', userId: 'U001', userName: 'Emily Johnson', copyId: 'C005', bookTitle: 'JavaScript: The Good Parts', bookIsbn: '978-0596517748', loanDate: DateTime(2026, 2, 14), dueDate: DateTime(2026, 3, 14), status: LoanStatus.active,  renewalCount: 0),
-    Loan(id: 'L003', userId: 'U001', userName: 'Emily Johnson', copyId: 'C009', bookTitle: 'Introduction to Algorithms', bookIsbn: '978-0262033848', loanDate: DateTime(2026, 1, 29), dueDate: DateTime(2026, 2, 28), status: LoanStatus.overdue, renewalCount: 0),
-    Loan(id: 'L004', userId: 'U004', userName: 'James Rodriguez', copyId: 'C004', bookTitle: 'JavaScript: The Good Parts', bookIsbn: '978-0596517748', loanDate: DateTime(2026, 3, 1), dueDate: DateTime(2026, 3, 31), status: LoanStatus.active, renewalCount: 0),
+    Loan(id: 'LOAN-001', userId: 'student-001', userName: 'Maria Garcia Lopez', copyId: 'COPY-001', bookTitle: 'Fundamentos de Programacion', bookIsbn: '978-0-13-468599-1', bookPrice: 52.00, loanDate: DateTime(2026, 2, 25), dueDate: DateTime(2026, 3, 11), status: LoanStatus.active, renewalCount: 0),
+    Loan(id: 'LOAN-002', userId: 'student-002', userName: 'Carlos Rodriguez Perez', copyId: 'COPY-015', bookTitle: 'Calculo Diferencial', bookIsbn: '978-607-15-0349-0', bookPrice: 38.00, loanDate: DateTime(2026, 2, 20), dueDate: DateTime(2026, 3, 6), status: LoanStatus.overdue, renewalCount: 1),
+    Loan(id: 'LOAN-003', userId: 'professor-001', userName: 'Dr. Juan Martinez', copyId: 'COPY-025', bookTitle: 'Inteligencia Artificial Moderna', bookIsbn: '978-0-262-03384-8', bookPrice: 95.00, loanDate: DateTime(2026, 3, 1), dueDate: DateTime(2026, 3, 22), status: LoanStatus.active, renewalCount: 0),
+    Loan(id: 'LOAN-004', userId: 'U004', userName: 'Ana Fernandez Torres', copyId: 'COPY-033', bookTitle: 'Fisica Universitaria Vol. 1', bookIsbn: '978-0-321-75640-4', bookPrice: 68.00, loanDate: DateTime(2026, 2, 18), dueDate: DateTime(2026, 3, 4), status: LoanStatus.overdue, renewalCount: 0),
+    Loan(id: 'LOAN-005', userId: 'U006', userName: 'Pedro Sanchez Diaz', copyId: 'COPY-042', bookTitle: 'Quimica Organica', bookIsbn: '978-607-15-0567-8', bookPrice: 72.00, loanDate: DateTime(2026, 3, 5), dueDate: DateTime(2026, 3, 19), status: LoanStatus.active, renewalCount: 1),
+    Loan(id: 'LOAN-006', userId: 'U008', userName: 'Laura Martin Gomez', copyId: 'COPY-055', bookTitle: 'Historia Universal Contemporanea', bookIsbn: '978-968-18-6071-5', bookPrice: 42.00, loanDate: DateTime(2026, 2, 15), dueDate: DateTime(2026, 3, 1), returnDate: DateTime(2026, 3, 1), status: LoanStatus.returned, renewalCount: 0),
+    Loan(id: 'LOAN-007', userId: 'U001', userName: 'Emily Johnson', copyId: 'COPY-008', bookTitle: 'Estructuras de Datos en Java', bookIsbn: '978-970-10-6104-6', bookPrice: 58.00, loanDate: DateTime(2026, 3, 8), dueDate: DateTime(2026, 3, 22), status: LoanStatus.active, renewalCount: 0),
+    Loan(id: 'LOAN-008', userId: 'U004', userName: 'James Rodriguez', copyId: 'COPY-022', bookTitle: 'Algebra Lineal', bookIsbn: '978-607-32-1444-4', bookPrice: 48.00, loanDate: DateTime(2026, 2, 28), dueDate: DateTime(2026, 3, 14), status: LoanStatus.active, renewalCount: 0),
+  ];
+
+  static final List<Fine> fines = [
+    Fine(id: 'FINE-001', userId: 'student-002', userName: 'Carlos Rodriguez Perez', loanId: 'LOAN-002', bookTitle: 'Calculo Diferencial', daysOverdue: 6, amount: 60, status: FineStatus.pending, createdAt: DateTime(2026, 3, 6)),
+    Fine(id: 'FINE-002', userId: 'U004', userName: 'Ana Fernandez Torres', loanId: 'LOAN-004', bookTitle: 'Fisica Universitaria Vol. 1', daysOverdue: 8, amount: 80, status: FineStatus.pending, createdAt: DateTime(2026, 3, 4)),
+    Fine(id: 'FINE-003', userId: 'U008', userName: 'Diego Hernandez Ruiz', loanId: 'LOAN-009', bookTitle: 'Microeconomia', daysOverdue: 3, amount: 30, status: FineStatus.paid, createdAt: DateTime(2026, 2, 28), paidAt: DateTime(2026, 3, 10)),
+  ];
+
+  static final List<WaitlistEntry> waitlist = [
+    WaitlistEntry(id: 'WAIT-001', bookIsbn: '978-0-262-03384-8', bookTitle: 'Inteligencia Artificial Moderna', userId: 'U006', userName: 'Sofia Ramirez Vega', requestDate: DateTime(2026, 3, 10), position: 1),
+    WaitlistEntry(id: 'WAIT-002', bookIsbn: '978-0-262-03384-8', bookTitle: 'Inteligencia Artificial Moderna', userId: 'U008', userName: 'Miguel Angel Torres', requestDate: DateTime(2026, 3, 11), position: 2),
+    WaitlistEntry(id: 'WAIT-003', bookIsbn: '978-0-13-468599-1', bookTitle: 'Fundamentos de Programacion', userId: 'U001', userName: 'Isabel Castro Mendez', requestDate: DateTime(2026, 3, 9), position: 1),
   ];
 
   static final List<PurchaseRequest> purchaseRequests = [
