@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 
 class CreateUserPage extends StatefulWidget {
   const CreateUserPage({super.key});
@@ -241,7 +241,32 @@ class _CreateUserPageState extends State<CreateUserPage> {
           ),
           const SizedBox(width: 12),
           ElevatedButton(
-            onPressed: _imported ? () => context.go('/users') : null,
+            onPressed: _imported ? () async {
+              final roleMap = {
+                'Estudiante': 'student',
+                'Profesor': 'professor',
+                'Bibliotecario': 'librarian',
+                'Administrador': 'administrator',
+              };
+              try {
+                await ApiService.createUser({
+                  'name': _importedData!['name']!,
+                  'email': _importedData!['email']!,
+                  'role': roleMap[_importedData!['type']] ?? 'student',
+                  'password': _idCtrl.text.trim().toLowerCase(),
+                });
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Usuario creado exitosamente')));
+                  context.go('/users');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)));
+                }
+              }
+            } : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: _green,
               disabledBackgroundColor: const Color(0xFFD1D5DB),

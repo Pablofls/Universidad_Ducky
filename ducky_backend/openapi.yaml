@@ -1,0 +1,1194 @@
+openapi: 3.0.3
+info:
+  title: Ducky Library API
+  description: >
+    API contract for the Sistema de Gestión de Biblioteca – Universidad Ducky.
+    This spec is the single source of truth shared by the Flask backend and the
+    Flutter frontend.  All JSON shapes defined here MUST be respected by both
+    sides.
+  version: 1.0.0
+  contact:
+    name: Universidad Ducky Dev Team
+
+servers:
+  - url: http://localhost:5000
+    description: Local development
+  - url: https://ducky-api.example.com
+    description: Production (TBD)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Security
+# ─────────────────────────────────────────────────────────────────────────────
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Reusable Schemas  (maps 1-to-1 with Flutter models.dart + auth_provider)
+  # ───────────────────────────────────────────────────────────────────────────
+  schemas:
+
+    # ── Enums ────────────────────────────────────────────────────────────────
+    UserRole:
+      type: string
+      enum: [administrator, librarian, student, professor]
+
+    CopyStatus:
+      type: string
+      enum: [available, borrowed, reserved, internal, damaged, lost]
+
+    LoanStatus:
+      type: string
+      enum: [active, overdue, returned]
+
+    FineStatus:
+      type: string
+      enum: [pending, paid]
+
+    PurchaseStatus:
+      type: string
+      enum: [pending, approved, rejected, purchased]
+
+    # ── Auth ─────────────────────────────────────────────────────────────────
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@ducky.edu
+        password:
+          type: string
+          format: password
+          example: admin
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT access token
+        user:
+          $ref: '#/components/schemas/AuthUser'
+
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: string
+          example: admin-001
+        name:
+          type: string
+          example: Usuario Admin
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    # ── AppUser (full user record) ───────────────────────────────────────────
+    AppUser:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+        phone:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    AppUserCreate:
+      type: object
+      required: [name, email, role, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+        phone:
+          type: string
+          nullable: true
+        password:
+          type: string
+          format: password
+
+    # ── Book ─────────────────────────────────────────────────────────────────
+    Book:
+      type: object
+      properties:
+        isbn:
+          type: string
+          example: "978-0134685991"
+        title:
+          type: string
+        author:
+          type: string
+        publisher:
+          type: string
+        year:
+          type: integer
+        topic:
+          type: string
+        section:
+          type: string
+        price:
+          type: number
+          format: double
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+        total_copies:
+          type: integer
+        available_copies:
+          type: integer
+
+    BookCreate:
+      type: object
+      required: [isbn, title, author, publisher, year, topic, section, price]
+      properties:
+        isbn:
+          type: string
+        title:
+          type: string
+        author:
+          type: string
+        publisher:
+          type: string
+        year:
+          type: integer
+        topic:
+          type: string
+        section:
+          type: string
+        price:
+          type: number
+          format: double
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+
+    BookUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        publisher:
+          type: string
+        year:
+          type: integer
+        topic:
+          type: string
+        section:
+          type: string
+        price:
+          type: number
+          format: double
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+
+    # ── BookCopy ─────────────────────────────────────────────────────────────
+    BookCopy:
+      type: object
+      properties:
+        id:
+          type: string
+        isbn:
+          type: string
+        book_title:
+          type: string
+        status:
+          $ref: '#/components/schemas/CopyStatus'
+        location:
+          type: string
+        condition:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        acquisition_date:
+          type: string
+          format: date
+
+    BookCopyCreate:
+      type: object
+      required: [isbn, location, condition]
+      properties:
+        isbn:
+          type: string
+        location:
+          type: string
+        condition:
+          type: string
+        notes:
+          type: string
+          nullable: true
+
+    # ── Loan ─────────────────────────────────────────────────────────────────
+    Loan:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        copy_id:
+          type: string
+        book_title:
+          type: string
+        book_isbn:
+          type: string
+        book_price:
+          type: number
+          format: double
+        loan_date:
+          type: string
+          format: date-time
+        due_date:
+          type: string
+          format: date-time
+        return_date:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          $ref: '#/components/schemas/LoanStatus'
+        fine:
+          type: number
+          format: double
+          nullable: true
+        renewal_count:
+          type: integer
+          default: 0
+
+    LoanCreate:
+      type: object
+      required: [user_id, copy_id]
+      properties:
+        user_id:
+          type: string
+        copy_id:
+          type: string
+        due_date:
+          type: string
+          format: date-time
+          description: Optional – backend calculates default (14 days).
+
+    LoanReturn:
+      type: object
+      required: [loan_id]
+      properties:
+        loan_id:
+          type: string
+
+    # ── Fine ─────────────────────────────────────────────────────────────────
+    Fine:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        loan_id:
+          type: string
+        book_title:
+          type: string
+        days_overdue:
+          type: integer
+        amount:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/FineStatus'
+        created_at:
+          type: string
+          format: date-time
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ── Waitlist ─────────────────────────────────────────────────────────────
+    WaitlistEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        book_isbn:
+          type: string
+        book_title:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        request_date:
+          type: string
+          format: date-time
+        position:
+          type: integer
+
+    WaitlistCreate:
+      type: object
+      required: [book_isbn, user_id]
+      properties:
+        book_isbn:
+          type: string
+        user_id:
+          type: string
+
+    # ── PurchaseRequest ──────────────────────────────────────────────────────
+    PurchaseRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        isbn:
+          type: string
+        book_title:
+          type: string
+        author:
+          type: string
+        requested_by:
+          type: string
+        quantity:
+          type: integer
+        unit_price:
+          type: number
+          format: double
+        total:
+          type: number
+          format: double
+          readOnly: true
+        justification:
+          type: string
+        status:
+          $ref: '#/components/schemas/PurchaseStatus'
+        created_at:
+          type: string
+          format: date-time
+        reviewed_by:
+          type: string
+          nullable: true
+        review_notes:
+          type: string
+          nullable: true
+
+    PurchaseRequestCreate:
+      type: object
+      required: [isbn, book_title, author, quantity, unit_price, justification]
+      properties:
+        isbn:
+          type: string
+        book_title:
+          type: string
+        author:
+          type: string
+        quantity:
+          type: integer
+        unit_price:
+          type: number
+          format: double
+        justification:
+          type: string
+
+    PurchaseReview:
+      type: object
+      required: [status, review_notes]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
+        review_notes:
+          type: string
+
+    # ── Dashboard ────────────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      properties:
+        total_books:
+          type: integer
+        total_copies:
+          type: integer
+        active_loans:
+          type: integer
+        overdue_books:
+          type: integer
+        loan_trend:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              loans:
+                type: integer
+        category_distribution:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: integer
+
+    # ── Student search result ────────────────────────────────────────────────
+    StudentSearchResult:
+      type: object
+      properties:
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
+        total:
+          type: integer
+
+    # ── Generic wrappers ─────────────────────────────────────────────────────
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Reusable Parameters
+  # ───────────────────────────────────────────────────────────────────────────
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+    PerPageParam:
+      name: per_page
+      in: query
+      schema:
+        type: integer
+        default: 20
+    SearchParam:
+      name: q
+      in: query
+      schema:
+        type: string
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Paths
+# ─────────────────────────────────────────────────────────────────────────────
+paths:
+
+  # ── Health ─────────────────────────────────────────────────────────────────
+  /:
+    get:
+      tags: [Health]
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+
+  # ── Auth ───────────────────────────────────────────────────────────────────
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Users ──────────────────────────────────────────────────────────────────
+  /api/users:
+    get:
+      tags: [Users]
+      summary: List all users
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserRole'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppUser'
+    post:
+      tags: [Users]
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppUserCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Users]
+      summary: Update a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppUserCreate'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+    delete:
+      tags: [Users]
+      summary: Deactivate a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  # ── Books ──────────────────────────────────────────────────────────────────
+  /api/books:
+    get:
+      tags: [Books]
+      summary: List all books
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: section
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      tags: [Books]
+      summary: Create a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/books/{isbn}:
+    get:
+      tags: [Books]
+      summary: Get book by ISBN
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Books]
+      summary: Update a book
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookUpdate'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+    delete:
+      tags: [Books]
+      summary: Delete a book
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /api/books/search:
+    get:
+      tags: [Books]
+      summary: Student-facing book search
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/SearchParam'
+        - name: topic
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentSearchResult'
+
+  # ── Copies ─────────────────────────────────────────────────────────────────
+  /api/copies:
+    get:
+      tags: [Copies]
+      summary: List all copies
+      parameters:
+        - $ref: '#/components/parameters/SearchParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CopyStatus'
+        - name: isbn
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookCopy'
+    post:
+      tags: [Copies]
+      summary: Register a new copy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCopyCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+
+  /api/copies/{id}:
+    get:
+      tags: [Copies]
+      summary: Get copy by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+    patch:
+      tags: [Copies]
+      summary: Update copy status / details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/CopyStatus'
+                location:
+                  type: string
+                condition:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+
+  # ── Loans ──────────────────────────────────────────────────────────────────
+  /api/loans:
+    get:
+      tags: [Loans]
+      summary: List loans
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/LoanStatus'
+        - name: user_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+    post:
+      tags: [Loans]
+      summary: Create a new loan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanCreate'
+      responses:
+        '201':
+          description: Loan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Validation error (copy unavailable, user has fines, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/loans/{id}:
+    get:
+      tags: [Loans]
+      summary: Get loan by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+
+  /api/loans/{id}/return:
+    post:
+      tags: [Loans]
+      summary: Return a book (mark loan as returned)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returned – may include auto-generated fine
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  loan:
+                    $ref: '#/components/schemas/Loan'
+                  fine:
+                    $ref: '#/components/schemas/Fine'
+                    nullable: true
+
+  /api/loans/{id}/renew:
+    post:
+      tags: [Loans]
+      summary: Renew a loan (extend due date)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Renewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Max renewals reached or overdue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Fines ──────────────────────────────────────────────────────────────────
+  /api/fines:
+    get:
+      tags: [Fines]
+      summary: List fines
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/FineStatus'
+        - name: user_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Fine'
+
+  /api/fines/{id}/pay:
+    post:
+      tags: [Fines]
+      summary: Mark fine as paid
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fine'
+
+  # ── Waitlist ───────────────────────────────────────────────────────────────
+  /api/waitlist:
+    get:
+      tags: [Waitlist]
+      summary: List waitlist entries
+      parameters:
+        - name: book_isbn
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaitlistEntry'
+    post:
+      tags: [Waitlist]
+      summary: Join waitlist for a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitlistCreate'
+      responses:
+        '201':
+          description: Added to waitlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistEntry'
+
+  /api/waitlist/{id}:
+    delete:
+      tags: [Waitlist]
+      summary: Remove from waitlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  # ── Purchase Requests ──────────────────────────────────────────────────────
+  /api/purchases:
+    get:
+      tags: [Purchases]
+      summary: List purchase requests
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/PurchaseStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PurchaseRequest'
+    post:
+      tags: [Purchases]
+      summary: Create a purchase request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequestCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequest'
+
+  /api/purchases/{id}:
+    get:
+      tags: [Purchases]
+      summary: Get purchase request by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequest'
+
+  /api/purchases/{id}/review:
+    post:
+      tags: [Purchases]
+      summary: Approve or reject a purchase request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseReview'
+      responses:
+        '200':
+          description: Reviewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequest'
+
+  # ── Dashboard ──────────────────────────────────────────────────────────────
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard statistics
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'

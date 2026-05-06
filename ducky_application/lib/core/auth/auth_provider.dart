@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../api_client.dart';
 
 // ── Enum de roles ─────────────────────────────────────────────────────────────
 enum UserRole { administrator, librarian, student, professor }
@@ -31,6 +32,20 @@ class AuthUser {
     required this.role,
   });
 
+  factory AuthUser.fromJson(Map<String, dynamic> json) => AuthUser(
+    id:    json['id'] as String,
+    name:  json['name'] as String,
+    email: json['email'] as String,
+    role:  UserRole.values.firstWhere((e) => e.name == json['role']),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id':    id,
+    'name':  name,
+    'email': email,
+    'role':  role.name,
+  };
+
   String get initials {
     final parts = name.trim().split(' ');
     if (parts.length == 1) return parts[0][0].toUpperCase();
@@ -39,67 +54,49 @@ class AuthUser {
 }
 
 // ── Provider de autenticación ─────────────────────────────────────────────────
-/// Equivalente al AuthContext.tsx del prototipo React.
-/// Cuando conectes la BD, sólo tienes que modificar [login] para hacer
-/// la llamada HTTP y rellenar el [AuthUser] con la respuesta.
+/// Conecta con el endpoint POST /api/auth/login del Flask backend.
+/// El JWT devuelto se almacena en ApiClient para que todas las peticiones
+/// posteriores lo envíen automáticamente en el header Authorization.
 class AuthProvider extends ChangeNotifier {
+  final ApiClient _api = ApiClient();
+
   AuthUser? _currentUser;
 
   AuthUser? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
 
-  // ── Mock de usuarios (reemplazar por API call) ────────────────────────────
-  static const _mockUsers = [
-    {
-      'id': 'admin-001',
-      'name': 'Usuario Admin',
-      'email': 'admin@ducky.edu',
-      'password': 'admin',
-      'role': UserRole.administrator,
-    },
-    {
-      'id': 'lib-001',
-      'name': 'Bibliotecario Demo',
-      'email': 'biblio@ducky.edu',
-      'password': 'biblio',
-      'role': UserRole.librarian,
-    },
-    {
-      'id': 'student-001',
-      'name': 'Alumno Demo',
-      'email': 'alumno@ducky.edu',
-      'password': 'alumno',
-      'role': UserRole.student,
-    },
-  ];
+  /// Getter for the raw JWT token (useful for debugging).
+  String? get token => _api.token;
 
-  /// Intenta autenticar. Devuelve null si ok, o un mensaje de error.
-  /// TODO: Reemplazar el cuerpo de este método con tu llamada a la BD.
+  /// Intenta autenticar contra la API real.
+  /// Devuelve null si ok, o un mensaje de error.
   Future<String?> login(String email, String password) async {
-    // --- Simulación de delay de red ---
-    await Future.delayed(const Duration(milliseconds: 400));
+    try {
+      final data = await _api.post('/api/auth/login', body: {
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      });
 
-    final found = _mockUsers.firstWhere(
-      (u) => u['email'] == email && u['password'] == password,
-      orElse: () => {},
-    );
+      // Store the JWT so subsequent API calls are authenticated
+      _api.token = data['token'] as String;
 
-    if (found.isEmpty) {
-      return 'Correo electrónico o contraseña incorrectos';
+      // Build the AuthUser from the response
+      _currentUser = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+
+      notifyListeners();
+      return null; // null = sin error
+    } on ApiException catch (e) {
+      // Backend returned a structured error (401, 400, etc.)
+      return e.message;
+    } catch (e) {
+      // Network error, DNS failure, timeout, etc.
+      return 'Error de conexión: no se pudo contactar al servidor';
     }
-
-    _currentUser = AuthUser(
-      id: found['id'] as String,
-      name: found['name'] as String,
-      email: found['email'] as String,
-      role: found['role'] as UserRole,
-    );
-    notifyListeners();
-    return null; // null = sin error
   }
 
   void logout() {
     _currentUser = null;
+    _api.clearToken();
     notifyListeners();
   }
 }

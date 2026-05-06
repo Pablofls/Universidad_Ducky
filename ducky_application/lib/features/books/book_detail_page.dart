@@ -1,18 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
-class BookDetailPage extends StatelessWidget {
+class BookDetailPage extends StatefulWidget {
   final String isbn;
   const BookDetailPage({super.key, required this.isbn});
+  @override
+  State<BookDetailPage> createState() => _BookDetailPageState();
+}
+
+class _BookDetailPageState extends State<BookDetailPage> {
   static const _green = Color(0xFF0E7334);
+  Book? _book;
+  List<BookCopy> _copies = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final results = await Future.wait([
+        ApiService.getBook(widget.isbn),
+        ApiService.getCopies(isbn: widget.isbn),
+      ]);
+      if (mounted) setState(() {
+        _book = results[0] as Book;
+        _copies = results[1] as List<BookCopy>;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final book = MockData.books.firstWhere((b) => b.isbn == isbn, orElse: () => MockData.books.first);
-    final copies = MockData.copies.where((c) => c.isbn == isbn).toList();
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
+    if (_book == null) return const Center(child: Text('Libro no encontrado'));
+    final book = _book!;
+    final copies = _copies;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),

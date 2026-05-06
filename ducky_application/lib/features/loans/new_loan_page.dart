@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class NewLoanPage extends StatefulWidget {
@@ -23,31 +23,66 @@ class _NewLoanPageState extends State<NewLoanPage> {
   @override
   void dispose() { _userSearchCtrl.dispose(); _bookSearchCtrl.dispose(); super.dispose(); }
 
+  List<AppUser> _allUsers = [];
+  List<Book> _allBooks = [];
+  List<BookCopy> _allCopies = [];
+  List<Loan> _allLoans = [];
+  List<Fine> _allFines = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final results = await Future.wait([
+        ApiService.getUsers(),
+        ApiService.getBooks(),
+        ApiService.getCopies(),
+        ApiService.getLoans(),
+        ApiService.getFines(),
+      ]);
+      if (mounted) setState(() {
+        _allUsers  = results[0] as List<AppUser>;
+        _allBooks  = results[1] as List<Book>;
+        _allCopies = results[2] as List<BookCopy>;
+        _allLoans  = results[3] as List<Loan>;
+        _allFines  = results[4] as List<Fine>;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   List<AppUser> get _userResults {
     final q = _userSearchCtrl.text.toLowerCase();
     if (q.isEmpty || _selectedUser != null) return [];
-    return MockData.users.where((u) =>
+    return _allUsers.where((u) =>
         u.id.toLowerCase().contains(q) || u.name.toLowerCase().contains(q)).take(5).toList();
   }
 
   List<Book> get _bookResults {
     final q = _bookSearchCtrl.text.toLowerCase();
     if (q.isEmpty || _selectedBook != null) return [];
-    return MockData.books.where((b) =>
+    return _allBooks.where((b) =>
         b.title.toLowerCase().contains(q) || b.author.toLowerCase().contains(q) || b.isbn.toLowerCase().contains(q)).take(5).toList();
   }
 
   List<BookCopy> get _availableCopies {
     if (_selectedBook == null) return [];
-    return MockData.copies.where((c) =>
+    return _allCopies.where((c) =>
         c.isbn == _selectedBook!.isbn && c.status == CopyStatus.available).toList();
   }
 
   ({bool isEligible, int activeLoans, bool hasOverdue, bool hasFines, double finesAmount}) _getEligibility(AppUser user) {
-    final userLoans = MockData.loans.where((l) => l.userId == user.id && l.status != LoanStatus.returned).toList();
+    final userLoans = _allLoans.where((l) => l.userId == user.id && l.status != LoanStatus.returned).toList();
     final activeLoans = userLoans.length;
     final hasOverdue = userLoans.any((l) => l.status == LoanStatus.overdue);
-    final userFines = MockData.fines.where((f) => f.userId == user.id && f.status == FineStatus.pending).toList();
+    final userFines = _allFines.where((f) => f.userId == user.id && f.status == FineStatus.pending).toList();
     final hasFines = userFines.isNotEmpty;
     final finesAmount = userFines.fold<double>(0, (s, f) => s + f.amount);
     return (isEligible: !hasFines && !hasOverdue && activeLoans < 3, activeLoans: activeLoans, hasOverdue: hasOverdue, hasFines: hasFines, finesAmount: finesAmount);
@@ -74,7 +109,23 @@ class _NewLoanPageState extends State<NewLoanPage> {
       actions: [
         OutlinedButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
         ElevatedButton(
-          onPressed: () { Navigator.pop(ctx); _showReceiptDialog(); },
+          onPressed: () async {
+            Navigator.pop(ctx);
+            try {
+              final loan = await ApiService.createLoan({
+                'user_id': _selectedUser!.id,
+                'copy_id': _selectedCopy!.id,
+                'due_date': _dueDate.toIso8601String(),
+              });
+              _showReceiptDialog(loan.id);
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error al crear prestamo: $e'),
+                      backgroundColor: const Color(0xFFEF4444)));
+              }
+            }
+          },
           style: ElevatedButton.styleFrom(backgroundColor: _green, foregroundColor: Colors.white),
           child: const Text('Confirmar Prestamo'),
         ),
@@ -82,8 +133,7 @@ class _NewLoanPageState extends State<NewLoanPage> {
     ));
   }
 
-  void _showReceiptDialog() {
-    final loanId = 'LOAN-${(MockData.loans.length + 1).toString().padLeft(3, '0')}';
+  void _showReceiptDialog(String loanId) {
     showDialog(context: context, barrierDismissible: false, builder: (ctx) => AlertDialog(
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         Container(
@@ -126,6 +176,7 @@ class _NewLoanPageState extends State<NewLoanPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final eligibility = _selectedUser != null ? _getEligibility(_selectedUser!) : null;
     final canSubmit = _selectedUser != null && _selectedCopy != null && (eligibility?.isEligible ?? false);
 

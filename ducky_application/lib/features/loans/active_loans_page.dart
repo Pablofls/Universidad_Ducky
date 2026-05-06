@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class ActiveLoansPage extends StatefulWidget {
@@ -20,9 +20,27 @@ class _ActiveLoansPageState extends State<ActiveLoansPage> {
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
+  List<Loan> _loans = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLoans();
+  }
+
+  Future<void> _loadLoans() async {
+    try {
+      final loans = await ApiService.getLoans();
+      if (mounted) setState(() { _loans = loans; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   List<Loan> get _filtered {
     final q = _searchCtrl.text.toLowerCase();
-    var list = MockData.loans.where((l) {
+    var list = _loans.where((l) {
       final ms = q.isEmpty ||
           l.id.toLowerCase().contains(q) ||
           l.userId.toLowerCase().contains(q) ||
@@ -45,6 +63,7 @@ class _ActiveLoansPageState extends State<ActiveLoansPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final filtered = _filtered;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
@@ -103,7 +122,7 @@ class _ActiveLoansPageState extends State<ActiveLoansPage> {
         ),
         const SizedBox(height: 16),
 
-        Text('Mostrando ${filtered.length} de ${MockData.loans.length} prestamos',
+        Text('Mostrando ${filtered.length} de ${_loans.length} prestamos',
             style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
         const SizedBox(height: 12),
 

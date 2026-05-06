@@ -1,21 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
-class PurchaseDetailPage extends StatelessWidget {
+class PurchaseDetailPage extends StatefulWidget {
   final String id;
   const PurchaseDetailPage({super.key, required this.id});
+  @override
+  State<PurchaseDetailPage> createState() => _PurchaseDetailPageState();
+}
+
+class _PurchaseDetailPageState extends State<PurchaseDetailPage> {
   static const _green = Color(0xFF0E7334);
+  PurchaseRequest? _purchase;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final p = await ApiService.getPurchase(widget.id);
+      if (mounted) setState(() { _purchase = p; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   String _fmtDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2,'0')}-${d.day.toString().padLeft(2,'0')}';
 
   @override
   Widget build(BuildContext context) {
-    final p = MockData.purchaseRequests.firstWhere((r) => r.id == id,
-        orElse: () => MockData.purchaseRequests.first);
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
+    if (_purchase == null) return const Center(child: Text('Solicitud no encontrada'));
+    final p = _purchase!;
 
     Color statusBg, statusFg;
     switch (p.status) {

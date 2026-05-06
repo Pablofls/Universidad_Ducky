@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class WaitlistPage extends StatefulWidget {
@@ -14,12 +14,30 @@ class _WaitlistPageState extends State<WaitlistPage> {
   final _searchCtrl = TextEditingController();
   static const _green = Color(0xFF0E7334);
 
+  List<WaitlistEntry> _waitlist = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWaitlist();
+  }
+
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
+  Future<void> _loadWaitlist() async {
+    try {
+      final list = await ApiService.getWaitlist();
+      if (mounted) setState(() { _waitlist = list; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   List<WaitlistEntry> get _filtered {
     final q = _searchCtrl.text.toLowerCase();
-    return MockData.waitlist.where((e) =>
+    return _waitlist.where((e) =>
         q.isEmpty ||
         e.bookTitle.toLowerCase().contains(q) ||
         e.userName.toLowerCase().contains(q) ||
@@ -33,6 +51,7 @@ class _WaitlistPageState extends State<WaitlistPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final filtered = _filtered;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
@@ -72,7 +91,7 @@ class _WaitlistPageState extends State<WaitlistPage> {
         ),
         const SizedBox(height: 16),
 
-        Text('Mostrando ${filtered.length} de ${MockData.waitlist.length} solicitudes',
+        Text('Mostrando ${filtered.length} de ${_waitlist.length} solicitudes',
             style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
         const SizedBox(height: 12),
 
@@ -101,9 +120,11 @@ class _WaitlistPageState extends State<WaitlistPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Notificacion enviada a ${e.userName}')));
               },
-              onRemove: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Solicitud ${e.id} eliminada')));
+              onRemove: () async {
+                try {
+                  await ApiService.deleteWaitlistEntry(e.id);
+                  _loadWaitlist();
+                } catch (_) {}
               },
             )),
             if (filtered.isEmpty)

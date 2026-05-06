@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../app/router.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class PurchaseListPage extends StatefulWidget {
@@ -16,12 +16,30 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
   String _statusFilter = 'Todos';
   static const _green = Color(0xFF0E7334);
 
+  List<PurchaseRequest> _purchases = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPurchases();
+  }
+
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
+  Future<void> _loadPurchases() async {
+    try {
+      final list = await ApiService.getPurchases();
+      if (mounted) setState(() { _purchases = list; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   List<PurchaseRequest> get _filtered {
     final q = _searchCtrl.text.toLowerCase();
-    return MockData.purchaseRequests.where((p) {
+    return _purchases.where((p) {
       final ms = q.isEmpty ||
           p.bookTitle.toLowerCase().contains(q) ||
           p.author.toLowerCase().contains(q) ||
@@ -34,6 +52,7 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final filtered = _filtered;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class LoanDetailPage extends StatefulWidget {
@@ -14,8 +14,23 @@ class LoanDetailPage extends StatefulWidget {
 
 class _LoanDetailPageState extends State<LoanDetailPage> {
   static const _green = Color(0xFF0E7334);
+  Loan? _loan;
+  bool _loading = true;
 
-  Loan? get _loan => MockData.loans.where((l) => l.id == widget.loanId).firstOrNull;
+  @override
+  void initState() {
+    super.initState();
+    _loadLoan();
+  }
+
+  Future<void> _loadLoan() async {
+    try {
+      final loan = await ApiService.getLoan(widget.loanId);
+      if (mounted) setState(() { _loan = loan; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   String _fmtDateLong(DateTime d) {
     const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -53,11 +68,21 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       actions: [
         OutlinedButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(ctx);
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Prestamo renovado exitosamente')));
-            context.go('/loans');
+            try {
+              await ApiService.renewLoan(_loan!.id);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Prestamo renovado exitosamente')));
+                _loadLoan();
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)));
+              }
+            }
           },
           style: ElevatedButton.styleFrom(backgroundColor: _green, foregroundColor: Colors.white),
           child: const Text('Confirmar'),
@@ -68,6 +93,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final loan = _loan;
     if (loan == null) {
       return SingleChildScrollView(

@@ -1,13 +1,45 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
+import '../../core/models/models.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  DashboardStats? _stats;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final stats = await ApiService.getDashboard();
+      if (mounted) setState(() { _stats = stats; _loading = false; });
+    } catch (e) {
+      if (mounted) setState(() { _error = e.toString(); _loading = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF0E7334)));
+    }
+    if (_error != null || _stats == null) {
+      return Center(child: Text(_error ?? 'Error cargando datos',
+          style: const TextStyle(color: Color(0xFFEF4444))));
+    }
+    final stats = _stats!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -27,33 +59,124 @@ class DashboardPage extends StatelessWidget {
           LayoutBuilder(builder: (context, c) {
             final w = (c.maxWidth - 48) / 4;
             return Row(children: [
-              _StatCard(label: 'Total de Libros',     value: '${MockData.dashboardStats.totalBooks}',
+              _StatCard(label: 'Total de Libros',     value: '${stats.totalBooks}',
                 icon: LucideIcons.tablet, iconBg: const Color(0xFFEFF6FF), iconColor: const Color(0xFF3B82F6), width: w),
               const SizedBox(width: 16),
-              _StatCard(label: 'Total de Ejemplares', value: '${MockData.dashboardStats.totalCopies}',
+              _StatCard(label: 'Total de Ejemplares', value: '${stats.totalCopies}',
                 icon: LucideIcons.bookCopy, iconBg: const Color(0xFFD1FAE5), iconColor: const Color(0xFF10B981), width: w),
               const SizedBox(width: 16),
-              _StatCard(label: 'Préstamos Activos',   value: '${MockData.dashboardStats.activeLoans}',
+              _StatCard(label: 'Préstamos Activos',   value: '${stats.activeLoans}',
                 icon: LucideIcons.bookOpen, iconBg: const Color(0xFFFEF3C7), iconColor: const Color(0xFFF59E0B), width: w),
               const SizedBox(width: 16),
-              _StatCard(label: 'Libros Vencidos',     value: '${MockData.dashboardStats.overdueBooks}',
+              _StatCard(label: 'Libros Vencidos',     value: '${stats.overdueBooks}',
                 icon: LucideIcons.alertCircle, iconBg: const Color(0xFFFEE2E2), iconColor: const Color(0xFFEF4444), width: w),
             ]);
           }),
           const SizedBox(height: 24),
 
           // ── Charts ───────────────────────────────────────────────────
-          LayoutBuilder(builder: (context, c) {
-            final half = (c.maxWidth - 20) / 2;
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _LoanTrendChart(width: half),
-                const SizedBox(width: 20),
-                _CategoryPieChart(width: half),
-              ],
-            );
-          }),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Loan trend bar chart (last 7 days)
+            Expanded(flex: 3, child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Préstamos (últimos 7 días)', style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+                const SizedBox(height: 20),
+                SizedBox(height: 200, child: BarChart(BarChartData(
+                  barGroups: stats.loanTrend.asMap().entries.map((e) {
+                    return BarChartGroupData(x: e.key, barRods: [
+                      BarChartRodData(
+                        toY: (e.value['count'] as int).toDouble(),
+                        color: const Color(0xFF0E7334),
+                        width: 24,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                      ),
+                    ]);
+                  }).toList(),
+                  titlesData: FlTitlesData(
+                    bottomTitles: AxisTitles(sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (v, _) {
+                        final i = v.toInt();
+                        if (i < 0 || i >= stats.loanTrend.length) return const SizedBox.shrink();
+                        final day = stats.loanTrend[i]['day'] as String;
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(day.substring(5), style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF))),
+                        );
+                      },
+                    )),
+                    leftTitles: AxisTitles(sideTitles: SideTitles(
+                      showTitles: true, reservedSize: 28,
+                      getTitlesWidget: (v, _) => Text(v.toInt().toString(),
+                          style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF))),
+                    )),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (_) => FlLine(color: const Color(0xFFE5E7EB), strokeWidth: 1),
+                  ),
+                  borderData: FlBorderData(show: false),
+                ))),
+              ]),
+            )),
+            const SizedBox(width: 16),
+            // Topic distribution pie chart
+            Expanded(flex: 2, child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Libros por Tema', style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+                const SizedBox(height: 20),
+                SizedBox(height: 200, child: PieChart(PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 36,
+                  sections: stats.topicDistribution.asMap().entries.map((e) {
+                    final colors = [
+                      const Color(0xFF0E7334), const Color(0xFF3B82F6), const Color(0xFFF59E0B),
+                      const Color(0xFFEF4444), const Color(0xFF8B5CF6), const Color(0xFF10B981),
+                      const Color(0xFFF97316), const Color(0xFF06B6D4),
+                    ];
+                    return PieChartSectionData(
+                      value: (e.value['count'] as int).toDouble(),
+                      color: colors[e.key % colors.length],
+                      radius: 40,
+                      title: '${e.value['count']}',
+                      titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                    );
+                  }).toList(),
+                ))),
+                const SizedBox(height: 16),
+                Wrap(spacing: 12, runSpacing: 6, children: stats.topicDistribution.asMap().entries.map((e) {
+                  final colors = [
+                    const Color(0xFF0E7334), const Color(0xFF3B82F6), const Color(0xFFF59E0B),
+                    const Color(0xFFEF4444), const Color(0xFF8B5CF6), const Color(0xFF10B981),
+                    const Color(0xFFF97316), const Color(0xFF06B6D4),
+                  ];
+                  return Row(mainAxisSize: MainAxisSize.min, children: [
+                    Container(width: 10, height: 10, decoration: BoxDecoration(
+                        color: colors[e.key % colors.length], shape: BoxShape.circle)),
+                    const SizedBox(width: 4),
+                    Text(e.value['topic'] as String, style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                  ]);
+                }).toList()),
+              ]),
+            )),
+          ]),
         ],
       ),
     );
@@ -83,14 +206,14 @@ class _StatCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Flexible(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(label, style: const TextStyle(
                 fontSize: 12, color: Color(0xFF6B7280))),
             const SizedBox(height: 6),
             Text(value, style: const TextStyle(
                 fontSize: 28, fontWeight: FontWeight.w700,
                 color: Color(0xFF111827))),
-          ]),
+          ])),
           Container(
             width: 44, height: 44,
             decoration: BoxDecoration(
@@ -101,165 +224,6 @@ class _StatCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// ── Loan trend bar chart ───────────────────────────────────────────────────────
-class _LoanTrendChart extends StatelessWidget {
-  final double width;
-  const _LoanTrendChart({required this.width});
-
-  @override
-  Widget build(BuildContext context) {
-    final data = MockData.loanTrend;
-    return Container(
-      width: width,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Tendencia de Préstamos', style: TextStyle(
-            fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-        const SizedBox(height: 2),
-        const Text('Actividad mensual de préstamos', style: TextStyle(
-            fontSize: 12, color: Color(0xFF6B7280))),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 240,
-          child: BarChart(BarChartData(
-            gridData: FlGridData(
-              show: true, drawVerticalLine: false,
-              getDrawingHorizontalLine: (_) =>
-                  const FlLine(color: Color(0xFFE5E7EB), strokeWidth: 1),
-            ),
-            borderData: FlBorderData(show: false),
-            titlesData: FlTitlesData(
-              leftTitles: AxisTitles(sideTitles: SideTitles(
-                showTitles: true, reservedSize: 28,
-                getTitlesWidget: (v, _) => Text('${v.toInt()}',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
-              )),
-              rightTitles:  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              topTitles:    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              bottomTitles: AxisTitles(sideTitles: SideTitles(
-                showTitles: true, reservedSize: 28,
-                getTitlesWidget: (v, _) {
-                  final i = v.toInt();
-                  if (i < 0 || i >= data.length) return const SizedBox();
-                  return Text(data[i]['month'] as String,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)));
-                },
-              )),
-            ),
-            barGroups: data.asMap().entries.map((e) => BarChartGroupData(
-              x: e.key,
-              barRods: [BarChartRodData(
-                toY: (e.value['loans'] as int).toDouble(),
-                color: const Color(0xFF3B82F6),
-                width: 32,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-              )],
-            )).toList(),
-          )),
-        ),
-      ]),
-    );
-  }
-}
-
-// ── Category pie chart ─────────────────────────────────────────────────────────
-class _CategoryPieChart extends StatelessWidget {
-  final double width;
-  const _CategoryPieChart({required this.width});
-
-  static const _colors = [
-    Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFFF59E0B),
-    Color(0xFF8B5CF6), Color(0xFF6B7280),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final data  = MockData.categoryDistribution;
-    final total = data.fold<int>(0, (s, e) => s + (e['value'] as int));
-
-    return Container(
-      width: width,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Categorías de Libros', style: TextStyle(
-            fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-        const SizedBox(height: 2),
-        const Text('Distribución por tema', style: TextStyle(
-            fontSize: 12, color: Color(0xFF6B7280))),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 240,
-          child: PieChart(PieChartData(
-            sections: data.asMap().entries.map((e) {
-              final pct = (e.value['value'] as int) / total * 100;
-              return PieChartSectionData(
-                value: (e.value['value'] as int).toDouble(),
-                color: _colors[e.key % _colors.length],
-                radius: 90,
-                title: '${pct.toStringAsFixed(0)}%',
-                titleStyle: const TextStyle(
-                    fontSize: 11, fontWeight: FontWeight.w700,
-                    color: Colors.white),
-                titlePositionPercentageOffset: 0.6,
-                badgeWidget: _PieBadge(
-                  label: e.value['name'] as String,
-                  color: _colors[e.key % _colors.length],
-                  pct: pct,
-                ),
-                badgePositionPercentageOffset: 1.35,
-              );
-            }).toList(),
-            sectionsSpace: 2,
-            centerSpaceRadius: 0,
-          )),
-        ),
-        const SizedBox(height: 16),
-        // Legend
-        Wrap(spacing: 12, runSpacing: 6,
-          children: data.asMap().entries.map((e) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(width: 10, height: 10,
-                decoration: BoxDecoration(
-                  color: _colors[e.key % _colors.length],
-                  shape: BoxShape.circle,
-                )),
-              const SizedBox(width: 4),
-              Text(e.value['name'] as String,
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
-            ],
-          )).toList(),
-        ),
-      ]),
-    );
-  }
-}
-
-class _PieBadge extends StatelessWidget {
-  final String label;
-  final Color color;
-  final double pct;
-  const _PieBadge({required this.label, required this.color, required this.pct});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '${label} ${pct.toStringAsFixed(0)}%',
-      style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600),
     );
   }
 }

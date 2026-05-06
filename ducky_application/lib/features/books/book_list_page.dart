@@ -3,7 +3,7 @@ import '../../../shared/utils/export_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../app/router.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class BookListPage extends StatefulWidget {
@@ -19,10 +19,21 @@ class _BookListPageState extends State<BookListPage> {
   List<Book> _books = [];
   static const _green = Color(0xFF0E7334);
 
+  bool _loading = true;
+
   @override
   void initState() {
     super.initState();
-    _books = List.from(MockData.books);
+    _loadBooks();
+  }
+
+  Future<void> _loadBooks() async {
+    try {
+      final books = await ApiService.getBooks();
+      if (mounted) setState(() { _books = books; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -42,10 +53,10 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   List<String> get _topics =>
-      ['Todos', ...{...MockData.books.map((b) => b.topic)}];
+      ['Todos', ...{..._books.map((b) => b.topic)}];
 
   void _deleteBook(Book book) {
-    showDialog(context: context, builder: (_) => AlertDialog(
+    showDialog<void>(context: context, builder: (_) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       title: const Text('Eliminar Libro',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
@@ -63,9 +74,12 @@ class _BookListPageState extends State<BookListPage> {
         TextButton(onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar', style: TextStyle(color: Color(0xFF374151)))),
         ElevatedButton(
-          onPressed: () {
-            setState(() => _books.removeWhere((b) => b.isbn == book.isbn));
-            Navigator.pop(context);
+          onPressed: () async {
+            try {
+              await ApiService.deleteBook(book.isbn);
+              setState(() => _books.removeWhere((b) => b.isbn == book.isbn));
+            } catch (_) {}
+            if (context.mounted) Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white, elevation: 0,
@@ -134,6 +148,9 @@ $rows
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF0E7334)));
+    }
     final filtered = _filtered;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),

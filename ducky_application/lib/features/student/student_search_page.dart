@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class StudentSearchPage extends StatefulWidget {
@@ -15,12 +15,38 @@ class _StudentSearchPageState extends State<StudentSearchPage> {
   Book? _selectedBook;
   static const _green = Color(0xFF0E7334);
 
+  List<Book> _allBooks = [];
+  List<BookCopy> _allCopies = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final results = await Future.wait([
+        ApiService.getBooks(),
+        ApiService.getCopies(),
+      ]);
+      if (mounted) setState(() {
+        _allBooks  = results[0] as List<Book>;
+        _allCopies = results[1] as List<BookCopy>;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
   List<Book> get _filtered {
     final q = _searchCtrl.text.toLowerCase();
-    return MockData.books.where((b) {
+    return _allBooks.where((b) {
       final ms = q.isEmpty ||
           b.title.toLowerCase().contains(q) ||
           b.author.toLowerCase().contains(q) ||
@@ -33,10 +59,11 @@ class _StudentSearchPageState extends State<StudentSearchPage> {
   }
 
   List<String> get _topics =>
-      ['Todos', ...{...MockData.books.map((b) => b.topic)}];
+      ['Todos', ...{..._allBooks.map((b) => b.topic)}];
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final filtered = _filtered;
     return Stack(children: [
       SingleChildScrollView(
@@ -142,7 +169,7 @@ class _StudentSearchPageState extends State<StudentSearchPage> {
       if (_selectedBook != null)
         _BookDetailModal(
           book: _selectedBook!,
-          copies: MockData.copies
+          copies: _allCopies
               .where((c) =>
                   c.isbn == _selectedBook!.isbn &&
                   c.status == CopyStatus.available)

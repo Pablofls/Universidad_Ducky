@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
+import '../../core/models/models.dart';
 
 class CreateCopyPage extends StatefulWidget {
   const CreateCopyPage({super.key});
@@ -17,6 +18,24 @@ class _CreateCopyPageState extends State<CreateCopyPage> {
   String _condition = 'Good';
   static const _green = Color(0xFF0E7334);
 
+  List<Book> _books = [];
+  bool _loadingBooks = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBooks();
+  }
+
+  Future<void> _loadBooks() async {
+    try {
+      final books = await ApiService.getBooks();
+      if (mounted) setState(() { _books = books; _loadingBooks = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loadingBooks = false);
+    }
+  }
+
   @override
   void dispose() { _idCtrl.dispose(); _locationCtrl.dispose(); super.dispose(); }
 
@@ -25,7 +44,8 @@ class _CreateCopyPageState extends State<CreateCopyPage> {
 
   @override
   Widget build(BuildContext context) {
-    final books = MockData.books;
+    if (_loadingBooks) return const Center(child: CircularProgressIndicator(color: _green));
+    final books = _books;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -137,7 +157,26 @@ class _CreateCopyPageState extends State<CreateCopyPage> {
           ),
           const SizedBox(width: 12),
           ElevatedButton(
-            onPressed: _isValid ? () => context.go('/copies') : null,
+            onPressed: _isValid ? () async {
+              try {
+                await ApiService.createCopy({
+                  'isbn': _selectedIsbn!,
+                  'location': _locationCtrl.text.trim(),
+                  'condition': _condition,
+                  'notes': 'Status: $_status',
+                });
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Copia creada exitosamente')));
+                  context.go('/copies');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)));
+                }
+              }
+            } : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: _green, disabledBackgroundColor: const Color(0xFFD1D5DB),
               foregroundColor: Colors.white, elevation: 0,

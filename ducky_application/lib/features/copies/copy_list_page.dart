@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../app/router.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class CopyListPage extends StatefulWidget {
@@ -17,10 +17,21 @@ class _CopyListPageState extends State<CopyListPage> {
   List<BookCopy> _copies = [];
   static const _green = Color(0xFF0E7334);
 
+  bool _loading = true;
+
   @override
   void initState() {
     super.initState();
-    _copies = List.from(MockData.copies);
+    _loadCopies();
+  }
+
+  Future<void> _loadCopies() async {
+    try {
+      final copies = await ApiService.getCopies();
+      if (mounted) setState(() { _copies = copies; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -40,6 +51,7 @@ class _CopyListPageState extends State<CopyListPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final filtered = _filtered;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),

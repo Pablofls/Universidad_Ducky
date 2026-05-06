@@ -16,6 +16,9 @@ dependencies:
   # Estado / Auth
   provider: ^6.1.2
 
+  # HTTP client
+  http: ^1.2.0
+
   # Íconos (equivalente a lucide-react)
   lucide_icons: ^0.257.0
 

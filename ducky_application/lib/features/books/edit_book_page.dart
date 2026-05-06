@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
+import '../../core/models/models.dart';
 
 class EditBookPage extends StatefulWidget {
   final String isbn;
@@ -13,17 +14,33 @@ class EditBookPage extends StatefulWidget {
 class _EditBookPageState extends State<EditBookPage> {
   late final TextEditingController _title, _author, _topic, _publisher, _section, _price;
   static const _green = Color(0xFF0E7334);
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    final book = MockData.books.firstWhere((b) => b.isbn == widget.isbn, orElse: () => MockData.books.first);
-    _title     = TextEditingController(text: book.title);
-    _author    = TextEditingController(text: book.author);
-    _topic     = TextEditingController(text: book.topic);
-    _publisher = TextEditingController(text: book.publisher);
-    _section   = TextEditingController(text: book.section);
-    _price     = TextEditingController(text: book.price.toStringAsFixed(2));
+    _title     = TextEditingController();
+    _author    = TextEditingController();
+    _topic     = TextEditingController();
+    _publisher = TextEditingController();
+    _section   = TextEditingController();
+    _price     = TextEditingController();
+    _loadBook();
+  }
+
+  Future<void> _loadBook() async {
+    try {
+      final book = await ApiService.getBook(widget.isbn);
+      _title.text     = book.title;
+      _author.text    = book.author;
+      _topic.text     = book.topic;
+      _publisher.text = book.publisher;
+      _section.text   = book.section;
+      _price.text     = book.price.toStringAsFixed(2);
+      if (mounted) setState(() => _loading = false);
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -34,6 +51,7 @@ class _EditBookPageState extends State<EditBookPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -83,7 +101,19 @@ class _EditBookPageState extends State<EditBookPage> {
               child: const Text('Cancelar', style: TextStyle(color: Color(0xFF374151)))),
           const SizedBox(width: 12),
           ElevatedButton(
-            onPressed: () => context.go('/books/${Uri.encodeComponent(widget.isbn)}'),
+            onPressed: () async {
+              try {
+                await ApiService.updateBook(widget.isbn, {
+                  'title': _title.text,
+                  'author': _author.text,
+                  'topic': _topic.text,
+                  'publisher': _publisher.text,
+                  'section': _section.text,
+                  'price': double.tryParse(_price.text) ?? 0,
+                });
+              } catch (_) {}
+              if (context.mounted) context.go('/books/${Uri.encodeComponent(widget.isbn)}');
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: _green, foregroundColor: Colors.white, elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

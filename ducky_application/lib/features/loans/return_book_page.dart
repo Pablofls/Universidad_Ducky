@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class ReturnBookPage extends StatefulWidget {
@@ -18,27 +18,51 @@ class _ReturnBookPageState extends State<ReturnBookPage> {
   Loan? _selectedLoan;
   String _bookCondition = 'Buena';
 
+  bool _loading = false;
+
   @override
   void initState() {
     super.initState();
     if (widget.prefilledLoanId != null) {
-      _selectedLoan = MockData.loans.where((l) => l.id == widget.prefilledLoanId).firstOrNull;
+      _loading = true;
+      _loadLoan(widget.prefilledLoanId!);
+    }
+  }
+
+  Future<void> _loadLoan(String id) async {
+    try {
+      final loan = await ApiService.getLoan(id);
+      if (mounted) setState(() { _selectedLoan = loan; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
-  void _handleSearch() {
-    final q = _searchCtrl.text.toLowerCase();
-    final loan = MockData.loans.where((l) =>
-        (l.id.toLowerCase() == q || l.userId.toLowerCase() == q || l.copyId.toLowerCase() == q) &&
-        l.status != LoanStatus.returned).firstOrNull;
-    if (loan != null) {
-      setState(() => _selectedLoan = loan);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se encontro un prestamo activo con esa informacion')));
+  void _handleSearch() async {
+    final q = _searchCtrl.text.trim();
+    if (q.isEmpty) return;
+    setState(() => _loading = true);
+    try {
+      final loans = await ApiService.getLoans();
+      final loan = loans.where((l) =>
+          (l.id.toLowerCase() == q.toLowerCase() ||
+           l.userId.toLowerCase() == q.toLowerCase() ||
+           l.copyId.toLowerCase() == q.toLowerCase()) &&
+          l.status != LoanStatus.returned).firstOrNull;
+      if (loan != null) {
+        setState(() { _selectedLoan = loan; _loading = false; });
+      } else {
+        setState(() => _loading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No se encontro un prestamo activo con esa informacion')));
+        }
+      }
+    } catch (_) {
+      setState(() => _loading = false);
     }
   }
 
@@ -103,11 +127,21 @@ class _ReturnBookPageState extends State<ReturnBookPage> {
       actions: [
         OutlinedButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(ctx);
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Devolucion registrada exitosamente')));
-            context.go('/loans');
+            try {
+              await ApiService.returnLoan(_selectedLoan!.id);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Devolucion registrada exitosamente')));
+                context.go('/loans');
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)));
+              }
+            }
           },
           style: ElevatedButton.styleFrom(backgroundColor: _green, foregroundColor: Colors.white),
           child: const Text('Confirmar'),

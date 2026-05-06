@@ -1,20 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
-class UserDetailPage extends StatelessWidget {
+class UserDetailPage extends StatefulWidget {
   final String userId;
   const UserDetailPage({super.key, required this.userId});
+  @override
+  State<UserDetailPage> createState() => _UserDetailPageState();
+}
 
+class _UserDetailPageState extends State<UserDetailPage> {
   static const _green = Color(0xFF0E7334);
+  AppUser? _user;
+  List<Loan> _loans = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final results = await Future.wait([
+        ApiService.getUser(widget.userId),
+        ApiService.getLoans(userId: widget.userId),
+      ]);
+      if (mounted) setState(() {
+        _user = results[0] as AppUser;
+        _loans = results[1] as List<Loan>;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final user = MockData.users.firstWhere(
-      (u) => u.id == userId, orElse: () => MockData.users.first);
-    final loans = MockData.loans.where((l) => l.userId == userId).toList();
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
+    if (_user == null) return const Center(child: Text('Usuario no encontrado'));
+    final user = _user!;
+    final loans = _loans;
     final fines = loans.where((l) => l.fine != null && l.fine! > 0)
         .fold(0.0, (s, l) => s + l.fine!);
 

@@ -1,19 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
-class CopyDetailPage extends StatelessWidget {
+class CopyDetailPage extends StatefulWidget {
   final String copyId;
   const CopyDetailPage({super.key, required this.copyId});
+  @override
+  State<CopyDetailPage> createState() => _CopyDetailPageState();
+}
+
+class _CopyDetailPageState extends State<CopyDetailPage> {
   static const _green = Color(0xFF0E7334);
+  BookCopy? _copy;
+  Book? _book;
+  Loan? _loan;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final copy = await ApiService.getCopy(widget.copyId);
+      final book = await ApiService.getBook(copy.isbn);
+      final loans = await ApiService.getLoans();
+      final activeLoan = loans.where((l) => l.copyId == widget.copyId && l.status != LoanStatus.returned).firstOrNull;
+      if (mounted) setState(() {
+        _copy = copy;
+        _book = book;
+        _loan = activeLoan;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final copy = MockData.copies.firstWhere((c) => c.id == copyId, orElse: () => MockData.copies.first);
-    final book = MockData.books.firstWhere((b) => b.isbn == copy.isbn, orElse: () => MockData.books.first);
-    final loan = MockData.loans.where((l) => l.copyId == copyId && l.status != LoanStatus.returned).firstOrNull;
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
+    if (_copy == null) return const Center(child: Text('Ejemplar no encontrado'));
+    final copy = _copy!;
+    final book = _book!;
+    final loan = _loan;
 
     Color statusBg, statusFg;
     switch (copy.status) {

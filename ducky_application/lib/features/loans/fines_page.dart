@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class FinesPage extends StatefulWidget {
@@ -19,9 +19,27 @@ class _FinesPageState extends State<FinesPage> {
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
+  List<Fine> _fines = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFines();
+  }
+
+  Future<void> _loadFines() async {
+    try {
+      final fines = await ApiService.getFines();
+      if (mounted) setState(() { _fines = fines; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   List<Fine> get _filtered {
     final q = _searchCtrl.text.toLowerCase();
-    return MockData.fines.where((f) {
+    return _fines.where((f) {
       final ms = q.isEmpty ||
           f.id.toLowerCase().contains(q) ||
           f.userId.toLowerCase().contains(q) ||
@@ -39,11 +57,12 @@ class _FinesPageState extends State<FinesPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
     final filtered = _filtered;
-    final totalPending = MockData.fines.where((f) => f.status == FineStatus.pending).fold<double>(0, (s, f) => s + f.amount);
-    final totalPaid = MockData.fines.where((f) => f.status == FineStatus.paid).fold<double>(0, (s, f) => s + f.amount);
-    final pendingCount = MockData.fines.where((f) => f.status == FineStatus.pending).length;
-    final paidCount = MockData.fines.where((f) => f.status == FineStatus.paid).length;
+    final totalPending = _fines.where((f) => f.status == FineStatus.pending).fold<double>(0, (s, f) => s + f.amount);
+    final totalPaid = _fines.where((f) => f.status == FineStatus.paid).fold<double>(0, (s, f) => s + f.amount);
+    final pendingCount = _fines.where((f) => f.status == FineStatus.pending).length;
+    final paidCount = _fines.where((f) => f.status == FineStatus.paid).length;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
@@ -133,7 +152,7 @@ class _FinesPageState extends State<FinesPage> {
         ),
         const SizedBox(height: 16),
 
-        Text('Mostrando ${filtered.length} de ${MockData.fines.length} multas',
+        Text('Mostrando ${filtered.length} de ${_fines.length} multas',
             style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
         const SizedBox(height: 12),
 
@@ -161,9 +180,15 @@ class _FinesPageState extends State<FinesPage> {
             ),
             ...filtered.map((f) => _FineRow(fine: f, fmtDate: _fmtDate,
               onViewLoan: () => context.go('/loans/${f.loanId}'),
-              onMarkPaid: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Multa ${f.id} marcada como pagada')));
+              onMarkPaid: () async {
+                try {
+                  await ApiService.payFine(f.id);
+                  _loadFines();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Multa ${f.id} marcada como pagada')));
+                  }
+                } catch (_) {}
               },
             )),
             if (filtered.isEmpty)

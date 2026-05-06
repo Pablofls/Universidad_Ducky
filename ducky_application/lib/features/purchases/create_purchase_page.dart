@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
+import '../../core/models/models.dart';
 
 class CreatePurchasePage extends StatefulWidget {
   const CreatePurchasePage({super.key});
@@ -26,6 +27,24 @@ class _CreatePurchasePageState extends State<CreatePurchasePage> {
     super.dispose();
   }
 
+  List<Book> _books = [];
+  bool _loadingBooks = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBooks();
+  }
+
+  Future<void> _loadBooks() async {
+    try {
+      final books = await ApiService.getBooks();
+      if (mounted) setState(() { _books = books; _loadingBooks = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loadingBooks = false);
+    }
+  }
+
   void _onBookSelected(String? isbn) {
     setState(() => _selectedIsbn = isbn);
     if (isbn == null) {
@@ -33,7 +52,7 @@ class _CreatePurchasePageState extends State<CreatePurchasePage> {
       _topicCtrl.clear(); _publisherCtrl.clear(); _priceCtrl.clear();
       return;
     }
-    final book = MockData.books.firstWhere((b) => b.isbn == isbn, orElse: () => MockData.books.first);
+    final book = _books.firstWhere((b) => b.isbn == isbn, orElse: () => _books.first);
     _titleCtrl.text    = book.title;
     _authorCtrl.text   = book.author;
     _topicCtrl.text    = book.topic;
@@ -47,7 +66,8 @@ class _CreatePurchasePageState extends State<CreatePurchasePage> {
 
   @override
   Widget build(BuildContext context) {
-    final books = MockData.books;
+    if (_loadingBooks) return const Center(child: CircularProgressIndicator(color: _green));
+    final books = _books;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -195,7 +215,28 @@ class _CreatePurchasePageState extends State<CreatePurchasePage> {
           ),
           const SizedBox(width: 12),
           ElevatedButton(
-            onPressed: _isValid ? () => context.go('/purchases') : null,
+            onPressed: _isValid ? () async {
+              try {
+                await ApiService.createPurchase({
+                  'isbn': _selectedIsbn ?? 'NUEVO',
+                  'book_title': _titleCtrl.text.trim(),
+                  'author': _authorCtrl.text.trim(),
+                  'quantity': int.tryParse(_qtyCtrl.text) ?? 1,
+                  'unit_price': double.tryParse(_priceCtrl.text) ?? 0,
+                  'justification': _justCtrl.text.trim(),
+                });
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Solicitud enviada exitosamente')));
+                  context.go('/purchases');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)));
+                }
+              }
+            } : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: _green, disabledBackgroundColor: const Color(0xFFD1D5DB),
               foregroundColor: Colors.white, elevation: 0,

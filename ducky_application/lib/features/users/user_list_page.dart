@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../app/router.dart';
-import '../../core/mock_data.dart';
+import '../../core/api_service.dart';
 import '../../core/models/models.dart';
 
 class UserListPage extends StatefulWidget {
@@ -19,10 +19,21 @@ class _UserListPageState extends State<UserListPage> {
 
   static const _green = Color(0xFF0E7334);
 
+  bool _loading = true;
+
   @override
   void initState() {
     super.initState();
-    _users = List.from(MockData.users);
+    _loadUsers();
+  }
+
+  Future<void> _loadUsers() async {
+    try {
+      final users = await ApiService.getUsers();
+      if (mounted) setState(() { _users = users; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -78,9 +89,12 @@ class _UserListPageState extends State<UserListPage> {
                 style: TextStyle(color: Color(0xFF374151))),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() => _users.removeWhere((u) => u.id == user.id));
-              Navigator.pop(context);
+            onPressed: () async {
+              try {
+                await ApiService.deleteUser(user.id);
+                setState(() => _users.removeWhere((u) => u.id == user.id));
+              } catch (_) {}
+              if (context.mounted) Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
@@ -97,6 +111,9 @@ class _UserListPageState extends State<UserListPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF0E7334)));
+    }
     final filtered = _filtered;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
