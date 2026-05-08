@@ -61,8 +61,12 @@ class _ReturnBookPageState extends State<ReturnBookPage> {
               const SnackBar(content: Text('No se encontro un prestamo activo con esa informacion')));
         }
       }
-    } catch (_) {
+    } catch (e) {
       setState(() => _loading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al buscar prestamos: $e'), backgroundColor: const Color(0xFFEF4444)));
+      }
     }
   }
 
@@ -152,6 +156,8 @@ class _ReturnBookPageState extends State<ReturnBookPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: _green));
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

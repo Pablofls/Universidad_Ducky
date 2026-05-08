@@ -24,6 +24,8 @@ import '../features/purchases/create_purchase_page.dart';
 import '../features/permissions/permissions_page.dart';
 import '../features/student/student_search_page.dart';
 import '../features/student/student_search_mobile_page.dart';
+import '../features/student/student_loans_page.dart';
+import '../features/student/student_loans_mobile_page.dart';
 import '../shared/widgets/app_scaffold.dart';
 import '../shared/widgets/app_layout.dart';
 
@@ -51,6 +53,7 @@ class AppRoutes {
   static const purchaseDetail = '/purchases/:id';
   static const permissions    = '/permissions';
   static const studentSearch  = '/student/search';
+  static const studentLoans   = '/student/loans';
 }
 
 // Sin animación — transición instantánea
@@ -134,6 +137,8 @@ GoRouter createRouter(AuthProvider authProvider) {
               pageBuilder: (_, __) => _noAnimPage(const PermissionsPage())),
           GoRoute(path: AppRoutes.studentSearch,
               pageBuilder: (_, __) => _noAnimPage(const StudentSearchPage())),
+          GoRoute(path: AppRoutes.studentLoans,
+              pageBuilder: (_, __) => _noAnimPage(const StudentLoansPage())),
         ],
       ),
 
@@ -144,6 +149,10 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/app',
             pageBuilder: (_, __) => _noAnimPage(const StudentSearchMobilePage()),
+          ),
+          GoRoute(
+            path: '/app/loans',
+            pageBuilder: (_, __) => _noAnimPage(const StudentLoansMobilePage()),
           ),
         ],
       ),

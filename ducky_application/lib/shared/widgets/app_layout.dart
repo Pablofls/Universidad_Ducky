@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../app/router.dart';
 import '../../core/auth/auth_provider.dart';
+import 'chatbot_widget.dart';
 
 /// Layout para la versión móvil — equivalente a AppLayout.tsx
 class AppLayout extends StatefulWidget {
@@ -23,8 +24,11 @@ class _AppLayoutState extends State<AppLayout> {
     final user = auth.currentUser;
     if (user == null) return const SizedBox.shrink();
 
+    final showChatbot = user.role == UserRole.student || user.role == UserRole.professor;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
+      floatingActionButton: showChatbot ? const ChatbotWidget() : null,
       body: SafeArea(child: Stack(children: [
         Column(children: [
           // ── Mobile top bar ──────────────────────────────────────────
@@ -98,7 +102,31 @@ class _AppLayoutState extends State<AppLayout> {
                 ]),
               ),
               const Divider(height: 1, color: Color(0xFFE5E7EB)),
-              const Spacer(),
+              
+              // Nav items
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    ListTile(
+                      leading: const Icon(LucideIcons.search, color: Color(0xFF374151)),
+                      title: const Text('Buscar Libros', style: TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF111827))),
+                      onTap: () {
+                        setState(() => _menuOpen = false);
+                        context.go('/app');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(LucideIcons.calendar, color: Color(0xFF374151)),
+                      title: const Text('Mis Préstamos', style: TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF111827))),
+                      onTap: () {
+                        setState(() => _menuOpen = false);
+                        context.go('/app/loans');
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
               // Logout
               Padding(

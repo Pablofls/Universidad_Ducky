@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../app/theme.dart';
 import '../../app/router.dart';
 import '../../core/auth/auth_provider.dart';
+import 'chatbot_widget.dart';
 
 class _NavItem {
   final String label;
@@ -17,17 +18,19 @@ class _NavItem {
 
 const _adminNav = [
   _NavItem(label: 'Tablero',               icon: LucideIcons.layoutDashboard, route: AppRoutes.dashboard,   roles: [UserRole.administrator, UserRole.librarian]),
-  _NavItem(label: 'Usuarios',              icon: LucideIcons.users,           route: AppRoutes.users,       roles: [UserRole.administrator, UserRole.librarian]),
+  _NavItem(label: 'Usuarios',              icon: LucideIcons.users,           route: AppRoutes.users,       roles: [UserRole.administrator]),
   _NavItem(label: 'Libros',               icon: LucideIcons.book,            route: AppRoutes.books,       roles: [UserRole.administrator, UserRole.librarian]),
   _NavItem(label: 'Ejemplares',            icon: LucideIcons.bookCopy,        route: AppRoutes.copies,      roles: [UserRole.administrator, UserRole.librarian]),
   _NavItem(label: 'Préstamos',             icon: LucideIcons.calendar,        route: AppRoutes.loans,       roles: [UserRole.administrator, UserRole.librarian]),
-  _NavItem(label: 'Solicitudes de Compra', icon: LucideIcons.shoppingCart,    route: AppRoutes.purchases,   roles: [UserRole.administrator, UserRole.librarian]),
+  _NavItem(label: 'Solicitudes de Compra', icon: LucideIcons.shoppingCart,    route: AppRoutes.purchases,   roles: [UserRole.administrator]),
   _NavItem(label: 'Permisos',              icon: LucideIcons.shield,          route: AppRoutes.permissions, roles: [UserRole.administrator]),
 ];
 
 const _studentNav = [
   _NavItem(label: 'Buscar Libros', icon: LucideIcons.search,
       route: AppRoutes.studentSearch, roles: [UserRole.student]),
+  _NavItem(label: 'Mis Préstamos', icon: LucideIcons.calendar,
+      route: AppRoutes.studentLoans, roles: [UserRole.student]),
 ];
 
 class AppScaffold extends StatelessWidget {
@@ -36,6 +39,9 @@ class AppScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().currentUser;
+    final showChatbot = user != null && (user.role == UserRole.student || user.role == UserRole.professor);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       body: Row(
@@ -44,6 +50,7 @@ class AppScaffold extends StatelessWidget {
           Expanded(child: ClipRect(child: child)),
         ],
       ),
+      floatingActionButton: showChatbot ? const ChatbotWidget() : null,
     );
   }
 }

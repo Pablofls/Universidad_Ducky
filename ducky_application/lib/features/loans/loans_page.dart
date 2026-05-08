@@ -33,6 +33,14 @@ class _LoansPageState extends State<LoansPage> with SingleTickerProviderStateMix
   }
 
   @override
+  void didUpdateWidget(LoansPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != oldWidget.initialTab) {
+      _tabCtrl.index = widget.initialTab;
+    }
+  }
+
+  @override
   void dispose() { _tabCtrl.dispose(); super.dispose(); }
 
   @override
